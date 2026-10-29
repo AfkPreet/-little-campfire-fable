@@ -1,0 +1,70 @@
+// npm run shots [milestone] -- starts the game (vite dev) and saves screenshots to shots/<milestone>/ using the debug hooks.
+// Cross-platform: pure Node + Playwright. Viewports: iPad landscape 1180x820 @2x and phone landscape 844x390 @2x.
+import { createServer } from 'vite';
+import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const milestone = process.argv[2] ?? 'm0';
+const only = process.argv[3]; // optional substring filter on shot names
+
+const VIEWPORTS = {
+  ipad: { width: 1180, height: 820, deviceScaleFactor: 2 },
+  phone: { width: 844, height: 390, deviceScaleFactor: 2 },
+};
+
+// Shot list grows as milestones land. Each entry: name, url query, settle ms.
+const SHOTS = {
+  m0: [
+    { name: 'board-palette', q: 'scene=styleboard&board=palette' },
+    { name: 'board-characters', q: 'scene=styleboard&board=characters' },
+    { name: 'board-landscape', q: 'scene=styleboard&board=landscape' },
+    { name: 'board-ui', q: 'scene=styleboard&board=ui' },
+  ],
+};
+
+const list = (SHOTS[milestone] ?? SHOTS.m0).filter((s) => !only || s.name.includes(only));
+const outDir = path.join(root, 'shots', milestone);
+await mkdir(outDir, { recursive: true });
+
+const server = await createServer({ root, server: { port: 5199, strictPort: true, host: '127.0.0.1' }, logLevel: 'error' });
+await server.listen();
+const base = `http://127.0.0.1:5199/`;
+
+const browser = await chromium.launch();
+let failures = 0;
+try {
+  for (const [vpName, vp] of Object.entries(VIEWPORTS)) {
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: vp.deviceScaleFactor, hasTouch: true, isMobile: false });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(String(e)));
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+    for (const shot of list) {
+      const url = `${base}?debug=1&noaudio=1&freeze=1&${shot.q}`;
+      await page.goto(url, { waitUntil: 'load' });
+      try {
+        await page.waitForFunction(() => window.__game && window.__game.ready === true, null, { timeout: 20000 });
+      } catch {
+        console.warn(`[shots] ${shot.name}@${vpName}: ready flag never set (timeout)`);
+        failures++;
+      }
+      await page.waitForTimeout(shot.settle ?? 600);
+      const file = path.join(outDir, `${shot.name}-${vpName}.png`);
+      await page.screenshot({ path: file, fullPage: false });
+      console.log(`[shots] ${path.relative(root, file)}`);
+    }
+    if (errors.length) {
+      failures++;
+      console.warn(`[shots] console errors @${vpName}:\n  ` + errors.join('\n  '));
+    }
+    await context.close();
+  }
+} finally {
+  await browser.close();
+  await server.close();
+}
+console.log(failures ? `[shots] done with ${failures} warning(s)` : '[shots] done, no console errors');
+process.exit(failures ? 1 : 0);
