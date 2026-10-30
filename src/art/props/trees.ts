@@ -16,7 +16,7 @@ export const TREE_KEYS = {
   jackfruit: 'jackfruit-tree',
 } as const;
 export const TREE_SIZES = {
-  bamboo: { w: 340, h: 500, baseX: 80 },
+  bamboo: { w: 480, h: 500, baseX: 80 },
   /** crown 420 wide; texture y 2 is world y 190 (LAYOUT.jamunTree.crownTopY) with the base at world 600 */
   jamun: { w: 440, h: 416, baseX: 220 },
   jackfruit: { w: 240, h: 400, baseX: 120 },

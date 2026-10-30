@@ -74,7 +74,7 @@ export class ClockRunner {
     land.setLighting(this.lighting);
     land.setWeather(w);
     land.setFireLit(this.fireLit);
-    land.update(0, this.camp.worldCam.scrollX, s.dayT);
+    land.update(0, this.camp.worldCam.worldView.x, s.dayT);
     this.camp.hero.setTint(Phaser.Display.Color.HexStringToColor(this.lighting.charTint).color);
     this.camp.tent?.setNight(phaseAt(s.dayT) === 'night');
     this.lastPhase = phaseAt(s.dayT);
@@ -101,7 +101,7 @@ export class ClockRunner {
     this.lighting = lightingAt(s.dayT, w);
     const land = this.camp.landscape;
     land.setLighting(this.lighting);
-    land.update(dt, this.camp.worldCam.scrollX, s.dayT);
+    land.update(dt, this.camp.worldCam.worldView.x, s.dayT);
     this.camp.hero.setTint(Phaser.Display.Color.HexStringToColor(this.lighting.charTint).color);
     land.setFireLit(this.fireLit);
 

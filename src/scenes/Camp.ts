@@ -168,7 +168,8 @@ export class CampScene extends Phaser.Scene implements CampContext {
 
   /** World -> screen (HUD space): every camera shares the viewport zoom and the HUD never scrolls. */
   worldToScreen(x: number, y: number): { x: number; y: number } {
-    return { x: x - this.worldCam.scrollX, y: y - this.worldCam.scrollY };
+    const v = this.worldCam.worldView;
+    return { x: x - v.x, y: y - v.y };
   }
 
   hud(): HudLike | null {

@@ -51,3 +51,14 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | title | 5 | 4 | 5 | 4 | 5 | 4 | 4 | 4 | Live dusk camp, fireflies, glowing logo: pass. Fix later: the hero's sleep pose is a rotated lying-on-back rig and reads as fallen over; needs a curled-up sleeping texture. Dotted tent spots show on the title (hide when a tent is pitched or on the title). |
 | shop | 4 | 4 | 5 | - | 4 | 5 | 5 | 4 | Clean, warm, legible; Doddamma and the greeting card work. Fix: the money icon is a generic coin, the bible says cowrie shell (kit coin texture repainted); the Monsoon Dome icon is a flat triangle, should read as a dome. |
 | cooking | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Kettle close-up, basket chips and fire read well. The tawa icon is heavy ink; soften with a bark rim. Pass. |
+
+### Round 2 (camp shots, after fixes): M1 passes
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| camp-day (iPad, phone) | 4 | 4 | 4 | 4 | 5 | 4 | 5 | 4 | Round 1 had a dark block top-right: the parallax used `camera.scrollX`, which is not the view's left edge under camera zoom; now uses `camera.worldView.x`. Bamboo culms were clipped by their 340 px texture; widened to 480. HUD (cowrie, day/phase, lantern, backpack, journal) reads at both sizes. |
+| camp-night | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Moon path, stars, fireflies in the bamboo, lit shop window and tent, firefly-lit thicket ring. Nit for M4: the laterite gatepost looks washed out under the shop lantern's additive glow. |
+| title | 5 | 4 | 5 | 4 | 5 | 4 | 4 | 4 | Sleep pose is now a curled nap (lean back, tail over like a blanket). Pass. |
+| day-summary | 4 | 4 | 4 | - | 4 | 5 | 5 | 3 | Card and bloom are fine but the midtrip debug state has no page data so no highlight lines show; verify with a played day in M4 and give the bloom a petal-opening animation. Not blocking. |
+
+**M1 verdict:** `npm run smoke` plays Day 1 (buy essentials, pitch, forage, fish, cook, eat, sleep), reloads and resumes on Day 2 with no console errors; every shot scores 4 or more except the day-summary "want to play" line, carried to M4 polish.
