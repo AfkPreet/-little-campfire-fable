@@ -116,7 +116,7 @@ export const STRINGS = {
   /** Mystery clue 3: three shopkeeper lines. */
   legend: [
     'Oh my. Where did you find this scale?',
-    'Old campers say a gentle guardian lives in the {Water}. It rises on rainy nights, for someone truly content.',
+    'Old campers say a gentle guardian lives in {Water}. It rises on rainy nights, for someone truly content.',
     'And they say she loves Moonlight Kadubu. Here, take my old recipe card.',
   ] as string[],
 
@@ -196,7 +196,7 @@ export const STRINGS = {
   /** Handwritten banner per rare moment. */
   moments: {
     shooting_star: 'A shooting star! Make a wish.',
-    rainbow: 'A rainbow over the {Water}!',
+    rainbow: 'A rainbow over {Water}!',
     firefly_swirl: 'The fireflies are dancing.',
     misty_sunrise: 'Everything is wrapped in soft mist.',
     golden_whisker: "A Golden Whisker! It's practically glowing.",

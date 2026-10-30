@@ -169,7 +169,7 @@ export class JournalScene extends Phaser.Scene {
     });
     const box = this.writingBox();
     this.titleText = makeText(this, box.x, box.y + L.headerH / 2 - 4, '', { size: L.titleSize, hand: true, color: PALETTE.ink }).setOrigin(0, 0.5);
-    this.counterText = makeText(this, box.x + box.w - UI.iconButton * 2 - UI.gap * 2, box.y + L.headerH / 2 - 4, '', { size: L.counterSize, weight: 600, align: 'right', color: mix(PALETTE.ink, PALETTE.cream, 0.3) }).setOrigin(1, 0.5);
+    this.counterText = makeText(this, box.x + box.w - UI.iconButton * 2 - UI.gap * 3 - 10, box.y + L.headerH / 2 - 4, '', { size: L.counterSize, weight: 600, align: 'right', color: mix(PALETTE.ink, PALETTE.cream, 0.3) }).setOrigin(1, 0.5);
     this.nextBtn = new Button(this, box.x + box.w - UI.iconButton / 2, box.y + L.headerH / 2 - 4, '', () => this.turn(1), { kind: 'icon', icon: JOURNAL_TEX.arrow, width: UI.minTouch });
     this.prevBtn = new Button(this, box.x + box.w - UI.iconButton * 1.5 - UI.gap, box.y + L.headerH / 2 - 4, '', () => this.turn(-1), { kind: 'icon', icon: JOURNAL_TEX.arrow, width: UI.minTouch });
     this.prevBtn.setScale(-1, 1).setData('baseScale', 1);

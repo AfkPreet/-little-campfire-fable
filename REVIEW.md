@@ -62,3 +62,12 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | day-summary | 4 | 4 | 4 | - | 4 | 5 | 5 | 3 | Card and bloom are fine but the midtrip debug state has no page data so no highlight lines show; verify with a played day in M4 and give the bloom a petal-opening animation. Not blocking. |
 
 **M1 verdict:** `npm run smoke` plays Day 1 (buy essentials, pitch, forage, fish, cook, eat, sleep), reloads and resumes on Day 2 with no console errors; every shot scores 4 or more except the day-summary "want to play" line, carried to M4 polish.
+
+## M2: full systems
+
+### Round 1 (integrator review of phase 1)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| journal-fish | 5 | 4 | 5 | - | 5 | 5 | 5 | 4 | Notebook with paper tabs, rose stamps, "???" silhouettes with hints, rarity stars: the spine of the game reads. Fix: the page counter sat under the previous-page button (moved left). |
+| moment-rainbow | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Soft six-band arc over the ridges with the handwritten banner at dawn. Fix: "over the Manjukere" became "over Manjukere" (proper noun; the same article dropped from the legend and album lines). |
