@@ -31,6 +31,13 @@ const SHOTS = {
     { name: 'camp-rain', q: 'scene=styleboard&board=camp&time=day&weather=rain', settle: 1500 },
     { name: 'camp-dawn-mist', q: 'scene=styleboard&board=camp&time=dawn&weather=mist', settle: 1500 },
   ],
+  m1: [
+    { name: 'title', q: 'scene=title', settle: 1200 },
+    { name: 'intro', q: 'scene=intro', settle: 800 },
+    { name: 'shop', q: 'scene=shop&state=fresh', settle: 900 },
+    { name: 'cooking', q: 'scene=cooking&state=midtrip', settle: 900 },
+    { name: 'day-summary', q: 'scene=daysummary&state=midtrip', settle: 2600 },
+  ],
 };
 
 const list = (SHOTS[milestone] ?? SHOTS.m0).filter((s) => !only || s.name.includes(only));

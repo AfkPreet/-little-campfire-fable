@@ -164,6 +164,15 @@ export const STRINGS = {
     newRecipeRibbon: 'NEW RECIPE!',
   },
 
+  /** Cooking overlay chrome (M1 Cooking scene; not spec-locked strings). */
+  cookingShell: {
+    close: 'Close',
+    cookMore: 'Cook more',
+    pickCookware: 'Pick your cookware',
+    eaten: '+{N} content',
+    saved: 'Tucked into the backpack',
+  },
+
   companion: {
     peeking: 'Something is peeking from the bushes...',
     nibbled: 'It nibbled the {Dish} and looked very pleased.',
@@ -223,6 +232,23 @@ export const STRINGS = {
     eraseConfirm: 'This clears your journal too.',
     cancel: 'Cancel',
     eraseConfirmButton: 'Erase',
+  },
+
+  /** Shop extras (M1): the Sell tab and small labels around the item cards. */
+  shopSell: {
+    sold: 'Sold {Count} {Item} for {Amount}c',
+    have: 'You have {Count}',
+    each: '{Price}c each',
+    ownedCount: 'x{Count}',
+    price: '{Price}c',
+    empty: 'Nothing to sell yet. Fish, forage and dishes will show up here.',
+  },
+  /** HUD extras (M1): the Journal placeholder and the Backpack overlay. */
+  hudExtras: {
+    journalSoon: 'Journal: coming soon',
+    backpackEmpty: 'Nothing in here yet.',
+    count: 'x{Count}',
+    fishSize: '{Fish} · {Size} cm',
   },
 } as const;
 
