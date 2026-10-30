@@ -76,8 +76,8 @@ type TailState = 'straight' | 'curling' | 'held' | 'ready';
 const HOLD_ARM_R = -72;
 const HOLD_ARM_L = -58;
 const SIT_DROP = 12;
-const SLEEP_ANGLE = -78;
-const SLEEP_LIFT = -18;
+const SLEEP_ANGLE = -28;
+const SLEEP_DROP = SIT_DROP + 6;
 
 const rnd = (a: number, b: number): number => a + Math.random() * (b - a);
 const TMP_M = new Phaser.GameObjects.Components.TransformMatrix();
@@ -367,11 +367,12 @@ export class Hero extends Phaser.GameObjects.Container {
       tw(this.footR, { x: 19, y: RIG.footR.y - SIT_DROP - 1, angle: -14 });
       this.setTailStraight(true);
     } else {
-      tw(this.poseNode, { angle: SLEEP_ANGLE, y: SLEEP_LIFT });
-      tw(this.footL, { x: RIG.footL.x + 4, y: RIG.footL.y + 2, angle: 24 });
-      tw(this.footR, { x: RIG.footR.x + 6, y: RIG.footR.y, angle: 10 });
+      // curled nap: lean back a little, sink like sitting, tuck the feet, tail curled over like a blanket
+      tw(this.poseNode, { angle: SLEEP_ANGLE, y: SLEEP_DROP });
+      tw(this.footL, { x: 6, y: RIG.footL.y - SLEEP_DROP + 2, angle: -22 });
+      tw(this.footR, { x: 16, y: RIG.footR.y - SLEEP_DROP + 1, angle: -30 });
       this.setExpression('sleepy');
-      this.setTailStraight(true);
+      this.setTailStraight(false);
     }
     return this;
   }
