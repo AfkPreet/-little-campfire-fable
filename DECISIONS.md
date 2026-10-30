@@ -82,3 +82,14 @@ Grafted from the Vietnam concept: paper lanterns under the shop awning and the l
 | Ridge tints | `lighting.ts` exposes four white-band colors: far, ridgeMid, mid, estate | Two colors (far, mid) with the estate sharing mid | Three visibly stacked chains plus a greener estate are what make the depth read at every key. |
 | Bands | Image strips per band, not TileSprites | TileSprites | A TileSprite allocates a world-sized canvas and re-uploads it on every tile-position change; strips are static quads. |
 | Review | The integrator re-scores every artist board with stricter kawaii / want-to-play bars and issues one polish round with explicit art direction | Accepting the artists' self-scores | Self-scores were 0.5-1 point generous on the tail, the guardian body and the depth; one directed round fixed each. |
+
+## 6. M1 decisions
+
+| Area | Chosen | Rejected | Why |
+| --- | --- | --- | --- |
+| Scene protocol | Camp owns the world and launches HUD in parallel; Shop, Journal, Cooking and DaySummary are separate scenes that hand control back via Camp events (`cooking:closed`, `summary:closed`) | One monolithic scene with modal states | Each overlay pauses the clock through `pauseClock(reason)` and can be screenshotted standalone (`?scene=cooking&state=midtrip`). |
+| HUD tap guard | Camp drops a tap when `hud.input.hitTestPointer` finds a HUD object under it | A shared "pressed this frame" flag | Needs no cooperation from HUD widgets. |
+| Parallax origin | Bands and world-to-screen use `camera.worldView.x/y` | `camera.scrollX/Y` | Under camera zoom, `scrollX` is not the view's left edge; the first camp shots had a dark block top-right on iPad. |
+| Debug API | `window.__game.api` (buyEssentials, pitchTent, forage, fish, cook, eatLastDish, sleep, saveNow, state) drives `npm run smoke` | Driving the UI with synthetic taps | Deterministic and fast; the UI is reviewed by screenshots instead. |
+| Hero sleep | A curled nap pose (lean back 28°, feet tucked, tail curled over) | A rotated lying-on-back rig | The rotated rig read as fallen over on the title screen. |
+| Currency icon | Cowrie shell painted in the UI kit | Generic coin | The bible's currency is cowries; the shell reads at 24 px. |
