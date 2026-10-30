@@ -1,0 +1,96 @@
+/**
+ * LAYOUT: the clearing's world positions (ART_BIBLE.md section 3). World units, y grows downward, ground at y 600.
+ * Gameplay code reads these; nothing in scene code repeats the numbers.
+ */
+export type XY = { x: number; y: number };
+
+export const WORLD_WIDTH = 2600;
+export const GROUND_Y = 600;
+
+/** Parallax scroll factors per band (ART_BIBLE section 3). 1 = moves with the world, 0 = fixed to the camera. */
+export const BAND_SCROLL = {
+  sky: 0,
+  ridges: 0.1,
+  estate: 0.25,
+  water: 1,
+  shallows: 0.5,
+  clearing: 1,
+  fringe: 1.3,
+} as const;
+
+/** Vertical extents of the bands (world y). */
+export const BAND_Y = {
+  skyBottom: 345,
+  ridgeTop: 170,
+  estateTop: 240,
+  shoreline: 345,
+  waterBottom: 720,
+  shallowsTop: 480,
+  shallowsBottom: 580,
+  ground: GROUND_Y,
+  fringeTop: 640,
+} as const;
+
+export type ForageKind = 'thicket' | 'log' | 'lemongrass' | 'jackfruit' | 'rockPool';
+export type ForageSpot = XY & { id: string; kind: ForageKind };
+export type HangPoint = XY & { id: string };
+
+export const LAYOUT = {
+  worldWidth: WORLD_WIDTH,
+  groundY: GROUND_Y,
+  /** The laterite path climbing off-left; tapping x < pathTapX heads to the shop. */
+  path: { x0: 0, x1: 220, tapX: 120 },
+  gatepost: { x: 160, y: GROUND_Y - 22 },
+  shop: { x: 40, y: GROUND_Y - 34 },
+  bamboo: { x: 300, y: GROUND_Y, topY: 120 },
+  tentSpots: [
+    { x: 560, y: GROUND_Y },
+    { x: 760, y: GROUND_Y },
+    { x: 960, y: GROUND_Y },
+  ] as const satisfies readonly XY[],
+  fire: { x: 1180, y: 588 },
+  cushion: { x: 1110, y: GROUND_Y },
+  bookshelf: { x: 1260, y: GROUND_Y },
+  jamunTree: { x: 1250, y: GROUND_Y, crownTopY: 150 },
+  hammock: { x: 1425, y: GROUND_Y - 70 },
+  jackfruitTree: { x: 1600, y: GROUND_Y, crownTopY: 230 },
+  /** Where the bank slopes down to the water. */
+  shore: { x: 1720, waterY: 615 },
+  rockPool: { x: 1760, y: 612 },
+  jetty: { x0: 1820, x1: 2080, deckY: 592, posts: 4 },
+  coracle: { x: 2130, y: 598 },
+  /** Any water point here is a fishing tap (plus the band directly beside the jetty). */
+  fishingZone: { x0: 1740, x1: WORLD_WIDTH, y0: 400, y1: 600 },
+  forageSpots: [
+    { id: 'thicket-1', kind: 'thicket', x: 420, y: GROUND_Y },
+    { id: 'log-1', kind: 'log', x: 640, y: GROUND_Y },
+    { id: 'lemongrass', kind: 'lemongrass', x: 1320, y: GROUND_Y },
+    { id: 'thicket-2', kind: 'thicket', x: 1400, y: GROUND_Y },
+    { id: 'log-2', kind: 'log', x: 1500, y: GROUND_Y },
+    { id: 'jackfruit', kind: 'jackfruit', x: 1600, y: GROUND_Y },
+    { id: 'rock-pool', kind: 'rockPool', x: 1760, y: 612 },
+  ] as const satisfies readonly ForageSpot[],
+  /** Companion peek spots are the two thickets. */
+  peekSpots: [{ x: 420, y: GROUND_Y - 30 }, { x: 1400, y: GROUND_Y - 30 }] as const satisfies readonly XY[],
+  /** Hang points on the jamun tree's lowest branch. Tents add their own (2 / 4 / 6). */
+  jamunHangPoints: [
+    { id: 'jamun-left', x: 1180, y: 420 },
+    { id: 'jamun-right', x: 1330, y: 440 },
+  ] as const satisfies readonly HangPoint[],
+  /** Ring of 6 ground decor points around the fire and tent spots. */
+  decorPoints: [
+    { x: 500, y: GROUND_Y },
+    { x: 680, y: GROUND_Y },
+    { x: 880, y: GROUND_Y },
+    { x: 1060, y: GROUND_Y },
+    { x: 1300, y: GROUND_Y },
+    { x: 1460, y: GROUND_Y },
+  ] as const satisfies readonly XY[],
+  /** Firelight warms everything within this radius at night. */
+  firelightRadius: 260,
+  /** Interactables glow when the hero is within this distance; at most 3 at once. */
+  interactRange: 180,
+  interactMaxGlow: 3,
+} as const;
+
+export type Layout = typeof LAYOUT;
