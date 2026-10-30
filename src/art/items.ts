@@ -80,6 +80,26 @@ function tent(ctx: Ctx, cloth: string, roofOnly = false, window = false): void {
   if (window) { oval(ctx, C + 11, 32, 4, 4, P.glow, 1.5); }
   line(ctx, C, 10, C, 4, shade(P.bark, -0.1), 2.5);
 }
+function dome(ctx: Ctx, cloth: string): void {
+  shadow(ctx);
+  // a round dome with a laterite rim band, a cream door arch and a small glowing window
+  ctx.beginPath();
+  ctx.moveTo(6, 46);
+  ctx.arc(C, 46, 22, Math.PI, 0, false);
+  ctx.closePath();
+  fillOutlined(ctx, cloth);
+  ctx.beginPath();
+  ctx.moveTo(6, 46); ctx.lineTo(50, 46);
+  ctx.strokeStyle = A.laterite; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(C - 7, 46);
+  ctx.arc(C, 46, 7, Math.PI, 0, false);
+  ctx.closePath();
+  ctx.fillStyle = shade(cloth, -0.28); ctx.fill();
+  oval(ctx, C + 13, 34, 3.5, 3.5, P.glow, 1.5);
+  ctx.beginPath(); ctx.moveTo(C - 14, 30); ctx.quadraticCurveTo(C, 20, C + 14, 30);
+  ctx.strokeStyle = alpha(P.cream, 0.6); ctx.lineWidth = 2; ctx.stroke();
+}
 function rod(ctx: Ctx, wood: string, glow = false): void {
   if (glow) { ctx.beginPath(); ctx.arc(14, 14, 11, 0, Math.PI * 2); ctx.fillStyle = alpha(P.glow, 0.5); ctx.fill(); }
   line(ctx, 10, 50, 44, 10, wood, 4);
@@ -254,7 +274,7 @@ function dishDisc(ctx: Ctx): void {
 
 const GEAR_PAINTERS: Record<string, (ctx: Ctx) => void> = {
   tent_leaf: (c) => tent(c, P.sage),
-  tent_dome: (c) => tent(c, P.powder, true),
+  tent_dome: (c) => dome(c, mix(P.powder, P.cream, 0.35)),
   tent_cabin: (c) => tent(c, P.bark, false, true),
   rod_bamboo: (c) => rod(c, mix(P.butter, P.bark, 0.4)),
   rod_willow: (c) => rod(c, P.bark),
