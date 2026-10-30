@@ -41,3 +41,13 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | camp-night, camp-rain, camp-dawn-mist, camp-golden | 4 | 4 | 5 | 4 | 5 | 4 | - | 4 | Firelight pool, fireflies, moon path; rain is cooler with streaks and rings; mist dissolves the ridges top-down; golden rim warmth. Pass. |
 
 **M0 verdict:** every board scores 4 or more on every applicable rubric line. Style board passed; gameplay code may begin (M1).
+
+## M1: vertical slice
+
+### Round 1 (integrator review of phase-1 scenes)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| title | 5 | 4 | 5 | 4 | 5 | 4 | 4 | 4 | Live dusk camp, fireflies, glowing logo: pass. Fix later: the hero's sleep pose is a rotated lying-on-back rig and reads as fallen over; needs a curled-up sleeping texture. Dotted tent spots show on the title (hide when a tent is pitched or on the title). |
+| shop | 4 | 4 | 5 | - | 4 | 5 | 5 | 4 | Clean, warm, legible; Doddamma and the greeting card work. Fix: the money icon is a generic coin, the bible says cowrie shell (kit coin texture repainted); the Monsoon Dome icon is a flat triangle, should read as a dome. |
+| cooking | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Kettle close-up, basket chips and fire read well. The tawa icon is heavy ink; soften with a bark rim. Pass. |
