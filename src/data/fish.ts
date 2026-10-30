@@ -42,13 +42,13 @@ export const FISH: readonly FishDef[] = [
   },
   {
     id: 'glowfin', name: 'Firefly Catfish', rarity: 'uncommon', sell: 24, baseCm: 20, rodTier: 2,
-    season: { phases: ['night'] }, whenLabel: 'Night', rodLabel: 'Willow Rod+',
+    season: { phases: ['night'] }, whenLabel: 'Night', rodLabel: 'Cane Rod+',
     flavor: 'Its fins glow like a lantern under the water at night.',
     hint: 'A soft light under the water after dark. Needs a sturdy rod.',
   },
   {
     id: 'koi', name: 'Petal Pearlspot', rarity: 'rare', sell: 45, baseCm: 38, rodTier: 2,
-    season: { phases: ['dawn'], weather: 'mist' }, whenLabel: 'Misty dawn', rodLabel: 'Willow Rod+',
+    season: { phases: ['dawn'], weather: 'mist' }, whenLabel: 'Misty dawn', rodLabel: 'Cane Rod+',
     flavor: 'Patterned like fallen petals; it drifts up through the morning mist.',
     hint: 'Glimpsed only through dawn mist. Needs a sturdy rod.',
   },

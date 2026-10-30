@@ -19,7 +19,7 @@ export const TENTS: readonly TentGear[] = [
   },
   {
     id: 'tent_cabin', kind: 'tent', tab: 'camp', name: 'Little Homestay Kit', price: 220,
-    flavor: 'A tiny wooden cabin with a window that glows at night.',
+    flavor: 'A tiny homestay with a red-tiled roof and a window that glows at night.',
     effect: 'Tent bonus +10; 6 hang points; a lit window at night',
     tentBonus: 10, hangPoints: 6, rainCozy: true, litWindow: true,
   },
@@ -34,7 +34,7 @@ export const RODS: readonly RodGear[] = [
   },
   {
     id: 'rod_willow', kind: 'rod', tab: 'fishing', name: 'Cane Rod', price: 80,
-    flavor: 'Bends like a willow in the breeze; the big ones can\'t shake it.',
+    flavor: 'Bends like good cane in the breeze; the big ones can\'t shake it.',
     effect: 'Bite window 1.9 s; catches Cane Rod+ fish',
     tier: 2, biteWindowMs: 1900, rareMultiplier: 1, glowsAtNight: false,
   },

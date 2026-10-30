@@ -17,14 +17,14 @@ export const MYSTERY_CLUES: readonly MysteryClue[] = [
   },
   {
     step: 3, id: 'legend', title: 'The legend', trigger: 'enter_shop_with_scale',
-    condition: 'Entering the shop with the scale triggers the legend and a recipe card. The Bamboo Steamer and Moon Blossom spot unlock.',
-    journal: 'The guardian rises on rainy nights for someone truly content. It\'s fond of Moonlight Dumplings.',
+    condition: 'Entering the shop with the scale triggers the legend and a recipe card. The Bamboo Steamer and Moon Lily spot unlock.',
+    journal: 'The guardian rises on rainy nights for someone truly content. It\'s fond of Moonlight Kadubu.',
     hint: 'Someone at the shop might know more.',
   },
   {
-    step: 4, id: 'dumplings', title: 'Moonlight Dumplings', trigger: 'cook_moonlight_dumplings',
-    condition: 'Cook Moonlight Dumplings: steamer + Flour + Moon Blossom + Night Glowfin.',
-    journal: 'Moonlight Dumplings. They glow a little.',
+    step: 4, id: 'dumplings', title: 'Moonlight Kadubu', trigger: 'cook_moonlight_dumplings',
+    condition: 'Cook Moonlight Kadubu: steamer + Flour + Moon Lily + Firefly Catfish.',
+    journal: 'Moonlight Kadubu. They glow a little.',
     hint: 'Follow the recipe card.',
   },
   {
@@ -45,7 +45,7 @@ export function mysteryClue(step: number): MysteryClue | undefined {
   return MYSTERY_CLUES.find((c) => c.step === step);
 }
 
-/** Steamer and Moon Blossom are unlocked once this many clues are found. */
+/** Steamer and Moon Lily are unlocked once this many clues are found. */
 export function mysteryUnlocksOpen(cluesFound: number): boolean {
   return cluesFound >= MYSTERY_RULES.unlockClue;
 }
