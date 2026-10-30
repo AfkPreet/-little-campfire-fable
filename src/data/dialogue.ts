@@ -130,6 +130,11 @@ export const STRINGS = {
     stayUp: 'Stay up a bit',
   },
 
+  /** Camp shell (M1 Camp scene): strings the spec implies but does not word. */
+  campShell: {
+    needTent: "You'll need a tent for that. {Shopkeeper}'s shop has one!",
+  },
+
   summary: {
     title: 'Day {n} done',
     caughtFish: 'Caught {n} fish',
