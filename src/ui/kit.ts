@@ -545,20 +545,38 @@ export function paintUiTextures(scene: Phaser.Scene): void {
     ctx.fill();
   });
 
-  // Coin: butter disc with a darker rim (generic; the world may re-skin)
+  // Cowrie shell (the currency, ART_BIBLE section 1): a plump cream oval with a soft rose lip and tiny teeth
   paintTexture(scene, TEX.coin, 32, 32, (ctx, w, h) => {
     const cx = w / 2, cy = h / 2;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 13, 0, Math.PI * 2);
-    fillStroke(ctx, PALETTE.butter, shade(PALETTE.butter, -0.32), 2.5);
-    ctx.beginPath();
-    ctx.arc(cx, cy, 8.5, 0, Math.PI * 2);
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = shade(PALETTE.butter, -0.2);
-    ctx.stroke();
-    ctx.fillStyle = alpha(cream, 0.6);
-    ellipsePath(ctx, cx - 4, cy - 5, 3.5, 2, -0.7);
+    const shell = mix(cream, PALETTE.butter, 0.4);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.45);
+    // body
+    ellipsePath(ctx, 0, 0, 13, 9.5);
+    fillStroke(ctx, shell, shade(shell, -0.3), 2.2);
+    // sheen
+    ctx.fillStyle = alpha(cream, 0.75);
+    ellipsePath(ctx, -4, -4, 4.5, 2.2, -0.3);
     ctx.fill();
+    // lip: a gentle curve along the long axis with tiny teeth
+    ctx.strokeStyle = shade(PALETTE.rose, -0.08);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-9, 1.5);
+    ctx.quadraticCurveTo(0, -1.5, 9, 1.5);
+    ctx.stroke();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = shade(PALETTE.rose, -0.2);
+    for (let k = -3; k <= 3; k++) {
+      const x = k * 2.6;
+      const y = 1.5 - (1 - (x * x) / 81) * 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 1.2);
+      ctx.lineTo(x, y + 1.6);
+      ctx.stroke();
+    }
+    ctx.restore();
   });
 
   // Sun and moon (HUD clock)
