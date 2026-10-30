@@ -16,6 +16,7 @@ import type { CookwareId, DishId, FishId, ForageId, IngredientId, TentId, Weathe
 import { LAYOUT } from '@/world/layout';
 import { fishingOf } from '@/systems/fishing';
 import { foragingOf } from '@/systems/foraging';
+import { companionOf } from '@/systems/companionFlow';
 
 export const CAMP_API = {
   /** auto-continue the DaySummary this long after it opens */
@@ -47,6 +48,8 @@ export interface CampApi {
   eatLastDish(): number | null;
   /** Flush the save to storage now. */
   saveNow(): boolean;
+  /** Force the companion to peek from the nearest thicket (screenshots). */
+  companionPeek(): Promise<void>;
   scene: CampScene;
   /** Extension point for later agents. */
   [k: string]: unknown;
@@ -152,6 +155,7 @@ export function installCampApi(camp: CampScene): CampApi {
       return added;
     },
     saveNow: () => storeSaveNow(),
+    companionPeek: () => companionOf(camp)?.forcePeek() ?? Promise.resolve(),
   };
   if (DEBUG.enabled) window.__game.api = api;
   return api;

@@ -44,6 +44,7 @@ const SHOTS = {
     { name: 'journal-fish', q: 'scene=journal&state=midtrip&tab=fish', settle: 900 },
     { name: 'journal-recipes', q: 'scene=journal&state=midtrip&tab=recipes', settle: 900 },
     { name: 'journal-mystery', q: 'scene=journal&state=midtrip&tab=mystery', settle: 900 },
+    { name: 'companion-peek', q: 'scene=camp&state=midtrip&time=dusk&peek=1', settle: 2500 },
     { name: 'moment-rainbow', q: 'scene=camp&state=midtrip&time=dawn&moment=rainbow', settle: 5000 },
     { name: 'moment-shooting-star', q: 'scene=camp&state=midtrip&time=night&moment=shooting_star', settle: 5000 },
   ],

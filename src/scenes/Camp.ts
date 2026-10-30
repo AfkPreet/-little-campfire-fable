@@ -27,6 +27,7 @@ import { installForaging } from '@/systems/foraging';
 import { installWeather } from '@/systems/weatherFlow';
 import { installTiers } from '@/systems/tiers';
 import { installMoments } from '@/systems/moments';
+import { installCompanion } from '@/systems/companionFlow';
 
 /** Camera and input tuning for the Camp scene. */
 export const CAMP = {
@@ -123,6 +124,7 @@ export class CampScene extends Phaser.Scene implements CampContext {
     installWeather(this);
     installTiers(this);
     installMoments(this);
+    installCompanion(this);
     this.api = installCampApi(this);
     this.time.delayedCall(CAMP.readyDelayMs, () => {
       window.__game.ready = true;

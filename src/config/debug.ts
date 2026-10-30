@@ -19,6 +19,8 @@ export const DEBUG = {
   moment: params.get('moment') ?? undefined,
   /** Journal tab to open on (?scene=journal&tab=fish). */
   tab: params.get('tab') ?? undefined,
+  /** Force the companion to peek once Camp settles (screenshots): ?peek=1 */
+  peek: params.get('peek') === '1',
   /** Freeze all animation time at a fixed value (screenshots): ?freeze=1 */
   freeze: params.get('freeze') === '1',
   /** Skip the audio-unlock gate and title (headless scripts). */

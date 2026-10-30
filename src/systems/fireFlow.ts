@@ -10,6 +10,7 @@ import { STRINGS } from '@/data';
 import { LAYOUT } from '@/world/layout';
 import { FIRE_SIZES } from '@/art/props/fire';
 import type { BubbleAction } from '@/ui/Bubble';
+import { companionOf } from '@/systems/companionFlow';
 
 export const FIRE_FLOW = {
   hit: { w: FIRE_SIZES.ring.w, h: 90 },
@@ -55,7 +56,7 @@ export class FireFlow {
         this.camp.resumeClock(FIRE_FLOW.pauseReason);
         resolve(result);
       });
-      this.camp.scene.launch(SCENES.cooking, {});
+      this.camp.scene.launch(SCENES.cooking, { companionNear: companionOf(this.camp)?.isNear() ?? false });
     });
   }
 
