@@ -20,11 +20,16 @@ const SHOTS = {
   m0: [
     { name: 'board-palette', q: 'scene=styleboard&board=palette' },
     { name: 'board-characters', q: 'scene=styleboard&board=characters' },
-    { name: 'board-landscape', q: 'scene=styleboard&board=landscape' },
     { name: 'board-ui', q: 'scene=styleboard&board=ui' },
     { name: 'board-npcs', q: 'scene=styleboard&board=npcs', settle: 1200 },
     { name: 'board-hero', q: 'scene=styleboard&board=hero', settle: 1400 },
     { name: 'board-fx', q: 'scene=styleboard&board=fx' },
+    { name: 'board-landscape', q: 'scene=styleboard&board=landscape', settle: 1500 },
+    { name: 'camp-day', q: 'scene=styleboard&board=camp&time=day', settle: 1500 },
+    { name: 'camp-golden', q: 'scene=styleboard&board=camp&time=golden', settle: 1500 },
+    { name: 'camp-night', q: 'scene=styleboard&board=camp&time=night', settle: 1500 },
+    { name: 'camp-rain', q: 'scene=styleboard&board=camp&time=day&weather=rain', settle: 1500 },
+    { name: 'camp-dawn-mist', q: 'scene=styleboard&board=camp&time=dawn&weather=mist', settle: 1500 },
   ],
 };
 

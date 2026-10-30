@@ -94,3 +94,53 @@ export const LAYOUT = {
 } as const;
 
 export type Layout = typeof LAYOUT;
+
+/** The laterite rise at the world's left: its grass top climbs from ground level at x = RISE.w up by RISE.climb at x 0. */
+export const RISE = { w: 320, climb: 50, pathW: 280 } as const;
+/** Ground-surface y at world x (the rise lifts the left end; flat at GROUND_Y elsewhere). */
+export function groundTopAt(x: number): number {
+  if (x >= RISE.w) return GROUND_Y;
+  const k = 1 - Math.max(0, x) / RISE.w;
+  return GROUND_Y - k * k * RISE.climb;
+}
+
+/**
+ * Scenery placement for the Landscape bands (ART_BIBLE section 3). Tile tops are the y of each painted band's top edge;
+ * the ridge crests then fall at 147-218 / 220-275 / 271-312 and the estate crest at 295-320, all above the shoreline.
+ */
+export const SCENERY = {
+  ridgeTops: [100, 135, 150] as const,
+  estateTop: 290,
+  /** mist band centers: between ridges 2-3, at the estate base, and the weather mist that swallows the slope */
+  mistY: { far: 268, estate: 340, weather: 290 },
+  /** shallows band (scroll 0.5): snags stand with their base at this y; local x along the band */
+  snagBaseY: 566,
+  snags: [
+    { x: 300, variant: 0, bird: false },
+    { x: 760, variant: 1, bird: false },
+    { x: 1240, variant: 2, bird: true },
+    { x: 1700, variant: 0, bird: false },
+    { x: 2200, variant: 1, bird: false },
+  ] as const,
+  reeds: [520, 1480, 2050] as const,
+  /** lily pads along the near shore (world x, water y, size 0..1) */
+  lilyPads: [
+    { x: 640, y: 574, s: 0.9 },
+    { x: 1030, y: 579, s: 1 },
+    { x: 1690, y: 571, s: 0.85 },
+    { x: 2210, y: 581, s: 1 },
+    { x: 2320, y: 568, s: 0.8 },
+    { x: 2470, y: 584, s: 1 },
+  ] as const,
+  /** fringe (scroll 1.3): clumps every `step` px with jitter, feet between the two y values */
+  fringe: { step: 118, jitter: 36, y0: 698, y1: 730 },
+  /** sky furniture (sky-band local y) */
+  cloudY: [66, 118, 92] as const,
+  egretY: [128, 158] as const,
+  starsH: 230,
+  /** where fireflies gather at night: the jamun crown and the bamboo culms (world rects) */
+  fireflyBounds: [
+    { x: 1080, y: 200, w: 340, h: 320 },
+    { x: 200, y: 160, w: 220, h: 340 },
+  ] as const,
+} as const;

@@ -17,3 +17,10 @@ Rubric (1-5 each): 1 serene at a glance · 2 kawaii · 3 palette and lighting ma
 | board-landscape, camp-* | - | - | - | - | - | - | - | - | Pending: the landscape artist is finishing the Landscape class and boards. |
 
 Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 → R3 4/5/4/4/5/4/4/4; NPCs R1 4/3/4/4/5/4/3/4 → R3 4.5/4.5/4.5/4/5/4.5/5/4.5. The integrator scores above are stricter on kawaii and on "want to play" for the hero tail and the guardian body.
+
+### Round 2 (after the character polish)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| board-hero | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Tail is now a fluffy comma with irregular fur bumps and the "?" curl reads; stripes run along the back; face is clean. Pass. Minor: crown dashes show as faint forehead arcs at 100 px (acceptable). |
+| board-npcs (Bangari) | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Hump, roof-tile scallops, forked lavender tail, dorsal fin, sleepy lidded eye and blush: a gentle fish spirit. Pass. Minor: pectoral petal faint against the glow belly; barbels hang in front of the belly (fine when risen at the dock). |

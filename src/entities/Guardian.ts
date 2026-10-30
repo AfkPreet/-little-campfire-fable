@@ -71,13 +71,12 @@ export class Guardian extends Phaser.GameObjects.Container {
     this.flip.add(this.rig);
     this.add(this.flip);
 
-    // tail petals (behind), dorsal petal, body, scales, face, pectoral petal and barbels (in front)
+    // forked tail fin and dorsal fin (behind; their textures carry their own translucency), body, scales, face,
+    // pectoral petal and barbels (in front)
     const [tx, ty] = local(GUARD.anchors.tail);
-    for (const [rot, sc] of [[-Math.PI / 2 - 0.5, 0.9], [-Math.PI / 2 + 0.5, 0.9], [-Math.PI / 2, 1.05]] as const) {
-      this.rig.add(this.makeFin(tx, ty, rot, sc));
-    }
+    this.rig.add(this.makeFin(tx, ty, 0, 1, GUARD_KEYS.tailFin, GUARD.tailFin.origin, 1));
     const [dx, dy] = local(GUARD.anchors.dorsal);
-    this.rig.add(this.makeFin(dx, dy, 0.12, 0.6));
+    this.rig.add(this.makeFin(dx, dy, 0, 1, GUARD_KEYS.dorsalFin, GUARD.dorsalFin.origin, 1));
 
     const body = makeImg(scene, 0, 0, GUARD_KEYS.body);
     this.scales = makeImg(scene, 0, 0, GUARD_KEYS.scales);
@@ -93,10 +92,11 @@ export class Guardian extends Phaser.GameObjects.Container {
     this.rig.add([body, this.scales, this.eyeHalf, this.eyeClosed, this.mouth, this.mouthOpen]);
 
     const [px, py] = local(GUARD.anchors.pectoral);
-    this.rig.add(this.makeFin(px, py, 2.5, 0.6));
+    this.rig.add(this.makeFin(px, py, 3.6, 0.7));
 
-    const [bx, by] = local(GUARD.barbel.root);
-    for (const [key, rot] of [[GUARD_KEYS.barbelA, 0.14], [GUARD_KEYS.barbelB, -0.22]] as const) {
+    // one barbel drifts from each mouth corner, splayed a little apart (positive rotation swings a hanging ribbon back)
+    for (const [key, root, rot] of [[GUARD_KEYS.barbelA, GUARD.barbel.root, -0.3], [GUARD_KEYS.barbelB, GUARD.barbel.rootB, 0.24]] as const) {
+      const [bx, by] = local(root);
       const b = makeImg(scene, bx, by, key);
       b.setOrigin(0.5, 0.03);
       b.setRotation(rot);
@@ -108,14 +108,17 @@ export class Guardian extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
-  private makeFin(x: number, y: number, rotation: number, scale: number): Phaser.GameObjects.Image {
-    const f = makeImg(this.scene, x, y, GUARD_KEYS.fin);
-    f.setOrigin(0.5, 0.97);
+  private makeFin(
+    x: number, y: number, rotation: number, scale: number,
+    key: string = GUARD_KEYS.fin, origin: readonly [number, number] = [0.5, 0.97], alpha = FIN_ALPHA,
+  ): Phaser.GameObjects.Image {
+    const f = makeImg(this.scene, x, y, key);
+    f.setOrigin(origin[0], origin[1]);
     f.setRotation(rotation);
     f.setScale(f.scaleX * scale);
     f.setData('baseScale', f.scaleX);
     f.setData('baseRot', rotation);
-    f.setAlpha(FIN_ALPHA);
+    f.setAlpha(alpha);
     this.fins.push(f);
     return f;
   }

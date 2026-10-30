@@ -40,11 +40,11 @@ function paintGradient(L: Lighting) {
 }
 
 /** Paints the gradient for a lighting (first call) or repaints it in place (later calls). */
-export function paintSkyGradient(scene: Phaser.Scene, L: Lighting): string {
+export function paintSkyGradient(scene: Phaser.Scene, L: Lighting, key: string = SKY_KEYS.gradient): string {
   const { w, h } = SKY_SIZES.gradient;
-  if (scene.textures.exists(SKY_KEYS.gradient)) repaintTexture(scene, SKY_KEYS.gradient, paintGradient(L));
-  else paintTexture(scene, SKY_KEYS.gradient, w, h, paintGradient(L));
-  return SKY_KEYS.gradient;
+  if (scene.textures.exists(key)) repaintTexture(scene, key, paintGradient(L));
+  else paintTexture(scene, key, w, h, paintGradient(L));
+  return key;
 }
 
 function paintSun(ctx: Ctx, w: number, h: number): void {

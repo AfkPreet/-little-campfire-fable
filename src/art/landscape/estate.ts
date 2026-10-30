@@ -144,3 +144,18 @@ function paintEstateTile(ctx: Ctx, w: number, h: number): void {
 export function paintEstate(scene: Phaser.Scene): void {
   paintTexture(scene, ESTATE_KEY, TILE_W, ESTATE_H, paintEstateTile);
 }
+
+export const ESTATE_REFLECT_KEY = 'estate-reflect';
+/**
+ * The slope mirrored for the water: only the top `visibleH` px of the tile (what stands above the shoreline),
+ * flipped so its crest hangs down from y 0. Tile it at the shoreline with a squashed scaleY at low alpha.
+ */
+export function paintEstateReflection(scene: Phaser.Scene, visibleH: number): string {
+  return paintTexture(scene, ESTATE_REFLECT_KEY, TILE_W, visibleH, (ctx, w) => {
+    ctx.save();
+    ctx.translate(0, visibleH);
+    ctx.scale(1, -1);
+    paintEstateTile(ctx, w, ESTATE_H);
+    ctx.restore();
+  });
+}

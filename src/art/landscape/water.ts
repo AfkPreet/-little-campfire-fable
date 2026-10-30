@@ -39,11 +39,11 @@ function paintBase(L: Lighting) {
 }
 
 /** Paints or repaints the water base gradient for a lighting. */
-export function paintWaterBase(scene: Phaser.Scene, L: Lighting): string {
+export function paintWaterBase(scene: Phaser.Scene, L: Lighting, key: string = WATER_KEYS.base): string {
   const { w, h } = WATER_SIZES.base;
-  if (scene.textures.exists(WATER_KEYS.base)) repaintTexture(scene, WATER_KEYS.base, paintBase(L));
-  else paintTexture(scene, WATER_KEYS.base, w, h, paintBase(L));
-  return WATER_KEYS.base;
+  if (scene.textures.exists(key)) repaintTexture(scene, key, paintBase(L));
+  else paintTexture(scene, key, w, h, paintBase(L));
+  return key;
 }
 
 /** Ripple: elongated soft glints, tighter near the top (horizon) and wider lower down; cream and deeper reservoir. */

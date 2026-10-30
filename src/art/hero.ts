@@ -72,11 +72,11 @@ export const RIG: HeroRig = {
   blushL: { x: -11, y: -65 },
   blushR: { x: 25, y: -66 },
   armL: { x: -8, y: -39 },
-  armR: { x: 11, y: -39 },
-  armLength: 19,
+  armR: { x: 8, y: -38 },
+  armLength: 15,
   footL: { x: -9, y: -4 },
   footR: { x: 9, y: -4 },
-  hold: { x: 27, y: -31 },
+  hold: { x: 23, y: -36 },
   bag: { x: 13, y: -17 },
   crown: { x: 4, y: -100 },
 };
@@ -155,13 +155,86 @@ function ribbon(center: Pt[], halfW: number[]): { inner: Pt[]; outer: Pt[]; outl
   return { inner, outer, outlinePts: [...inner, ...outer.slice().reverse()] };
 }
 
-function stripe(ctx: Ctx, from: Pt, ctrl: Pt, to: Pt, color = C.cream, w = 3): void {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = w;
+/** Catmull-Rom spline through control points, `perSeg` samples per segment (first and last point included). */
+function smoothCurve(pts: Pt[], perSeg = 6): Pt[] {
+  const out: Pt[] = [];
+  const n = pts.length;
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(n - 1, i + 2)];
+    for (let k = 0; k < perSeg; k++) {
+      const t = k / perSeg, t2 = t * t, t3 = t2 * t;
+      const cr = (a: number, b: number, c: number, d: number): number =>
+        0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+      out.push([cr(p0[0], p1[0], p2[0], p3[0]), cr(p0[1], p1[1], p2[1], p3[1])]);
+    }
+  }
+  out.push([pts[n - 1][0], pts[n - 1][1]]);
+  return out;
+}
+
+/** Linear interpolation of per-control-point values so they line up with smoothCurve's samples. */
+function smoothValues(v: number[], perSeg = 6): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < v.length - 1; i++) for (let k = 0; k < perSeg; k++) out.push(v[i] + (v[i + 1] - v[i]) * (k / perSeg));
+  out.push(v[v.length - 1]);
+  return out;
+}
+
+/** Segment index and fraction at arc-length fraction t (0..1) along a polyline. */
+function alongEdge(edge: Pt[], t: number): { i: number; k: number } {
+  const cum: number[] = [0];
+  for (let i = 1; i < edge.length; i++) cum.push(cum[i - 1] + Math.hypot(edge[i][0] - edge[i - 1][0], edge[i][1] - edge[i - 1][1]));
+  const target = t * cum[cum.length - 1];
+  let i = 1;
+  while (i < cum.length - 1 && cum[i] < target) i++;
+  const seg = cum[i] - cum[i - 1] || 1;
+  return { i: i - 1, k: Math.max(0, Math.min(1, (target - cum[i - 1]) / seg)) };
+}
+function lerpPt(arr: Pt[], i: number, k: number): Pt {
+  const a = arr[i], b = arr[Math.min(arr.length - 1, i + 1)];
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+}
+
+function sampleCubic(p0: Pt, c1: Pt, c2: Pt, p1: Pt, n = 14): Pt[] {
+  const out: Pt[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    const a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+    out.push([a * p0[0] + b * c1[0] + c * c2[0] + d * p1[0], a * p0[1] + b * c1[1] + c * c2[1] + d * p1[1]]);
+  }
+  return out;
+}
+function sampleQuad(p0: Pt, c: Pt, p1: Pt, n = 10): Pt[] {
+  const out: Pt[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    out.push([u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]]);
+  }
+  return out;
+}
+
+/** A fur stripe with tapered ends: a filled polygon around a polyline whose width eases to 0 at both ends. */
+function taperedStripe(ctx: Ctx, pts: Pt[], w: number, color: string, taper = 0.24): void {
+  const n = pts.length;
+  const left: Pt[] = [], right: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+    let nx = -(b[1] - a[1]), ny = b[0] - a[0];
+    const len = Math.hypot(nx, ny) || 1;
+    nx /= len;
+    ny /= len;
+    const hw = (w / 2) * Math.pow(Math.min(1, Math.min(t, 1 - t) / taper), 0.6);
+    left.push([pts[i][0] + nx * hw, pts[i][1] + ny * hw]);
+    right.push([pts[i][0] - nx * hw, pts[i][1] - ny * hw]);
+  }
   ctx.beginPath();
-  ctx.moveTo(from[0], from[1]);
-  ctx.quadraticCurveTo(ctrl[0], ctrl[1], to[0], to[1]);
-  ctx.stroke();
+  ctx.moveTo(left[0][0], left[0][1]);
+  for (let i = 1; i < n; i++) ctx.lineTo(left[i][0], left[i][1]);
+  for (let i = n - 1; i >= 0; i--) ctx.lineTo(right[i][0], right[i][1]);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
 }
 
 // ---------- part painters ----------
@@ -172,23 +245,19 @@ function paintShadow(scene: Phaser.Scene): void {
   });
 }
 
-/** Head: wide flattened oval, three cream dorsal stripes from the crown back, cream muzzle, peach nose. 66x60. */
+/** Head: wide flattened oval, three short cream dashes on the crown between the ears, cream muzzle, peach nose. 66x60. */
 function paintHead(scene: Phaser.Scene): void {
   paintTexture(scene, HERO_KEYS.head, 66, 60, (ctx) => {
     const cx = 33, cy = 31, rx = 29, ry = 26;
     ellipsePath(ctx, cx, cy, rx, ry);
     fillOutlined(ctx, FUR, LINE_W);
-    // soft sheen on the upper-left of the crown
-    sheen(ctx, cx - 9, cy - 13, 11, 6, C.cream, 0.18);
-    // three cream stripes hugging the crown and back of the head (concentric arcs, 3 px, 4 px of fur between)
-    ctx.lineCap = 'round';
-    const arcs: Array<[number, number]> = [[1.04, 1.6], [1.12, 1.58], [1.26, 1.55]];
-    arcs.forEach(([a0, a1], k) => {
-      ctx.strokeStyle = C.cream;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx - 4 - 5.5 * k, ry - 4 - 5.5 * k, 0, Math.PI * a0, Math.PI * a1);
-      ctx.stroke();
+    // soft sheen on the front of the crown (clear of the dashes)
+    sheen(ctx, cx + 6, cy - 11, 9, 5, C.cream, 0.16);
+    // three short cream dashes on the crown, front-to-back, bowing with the top edge; the face stays clean
+    const dashes: Array<[number, number]> = [[9, 16], [14.5, 21], [20, 18]]; // [y at the apex, length]
+    dashes.forEach(([y, len], k) => {
+      const sag = 1.4 + k * 0.3;
+      taperedStripe(ctx, sampleQuad([cx - len / 2, y + sag], [cx, y - sag], [cx + len / 2, y + sag]), 2.6, alpha(C.cream, 0.92), 0.3);
     });
     // cream muzzle (soft, no hard outline) and the peach nose dot
     ctx.fillStyle = C.cream;
@@ -307,7 +376,7 @@ function paintBlush(scene: Phaser.Scene): void {
   paintTexture(scene, HERO_KEYS.blush, 14, 10, (ctx) => blushOval(ctx, 7, 5, 5, 3, C.blush));
 }
 
-/** Body: soft bean, cream belly, three stripes down the back, jute sling bag across the chest. 56x54. */
+/** Body: soft bean, plain cream belly, three stripes along the back (the left contour), jute sling bag. 56x54. */
 function paintBody(scene: Phaser.Scene): void {
   paintTexture(scene, HERO_KEYS.body, 56, 54, (ctx) => {
     const cx = 28, cy = 27;
@@ -317,14 +386,17 @@ function paintBody(scene: Phaser.Scene): void {
       [cx + 12, cy + 23], [cx - 10, cy + 23], [cx - 21, cy + 13], [cx - 22, cy - 6],
     ]);
     fillOutlined(ctx, FUR, LINE_W);
-    // cream belly patch on the front (right) side
+    // plain cream belly patch on the front (right) side
     ctx.fillStyle = C.cream;
-    ellipsePath(ctx, cx + 8, cy + 5, 11, 15);
+    ellipsePath(ctx, cx + 10, cy + 5, 10, 15);
     ctx.fill();
-    // three dorsal stripes running down the back toward the tail base (lower-left)
-    stripe(ctx, [cx - 8, cy - 19], [cx - 20, cy - 10], [cx - 19, cy + 10]);
-    stripe(ctx, [cx - 1, cy - 19], [cx - 14, cy - 8], [cx - 13, cy + 12]);
-    stripe(ctx, [cx + 6, cy - 19], [cx - 8, cy - 6], [cx - 7, cy + 12]);
+    // three cream stripes following the back contour from the shoulder down to the tail base: 3 px, 4 px of fur between
+    const back: Pt[][] = [
+      sampleCubic([24, 11], [12, 11], [10, 25], [14, 41]),
+      sampleCubic([27.5, 18], [19, 18], [17, 29], [21, 41]),
+      sampleCubic([28, 24.5], [25, 25], [23.5, 32], [27, 40.5]),
+    ];
+    back.forEach((pts, k) => taperedStripe(ctx, pts, 3, alpha(C.cream, k === 2 ? 0.8 : 0.95), 0.18));
     // jute sling: strap from the back shoulder across the chest to the front hip, pouch at the hip
     ctx.lineCap = 'round';
     ctx.strokeStyle = outline(C.bark, 0.25);
@@ -356,18 +428,29 @@ function paintBody(scene: Phaser.Scene): void {
   });
 }
 
-/** Arms: stubby capsule with a rounded paw, pivot at the shoulder (top). 18x28. Far arm is a shade darker. */
+/**
+ * Arms: a short rounded stub hanging from the shoulder pivot (9, 4.5) and resting against the body's side, tilting a
+ * touch forward, with a tiny paw at the end (RIG.armLength from the pivot). 18x28. Far arm is a shade darker.
+ */
 function paintArms(scene: Phaser.Scene): void {
   const paint = (key: string, fill: string) =>
     paintTexture(scene, key, 18, 28, (ctx) => {
       unionOutlined(ctx, [
-        () => blobPath(ctx, [[5, 4], [13, 4], [14, 14], [13, 21], [5, 21], [4, 14]]),
-        () => ellipsePath(ctx, 9, 21, 6, 5),
+        () => blobPath(ctx, [[4.5, 4], [13.5, 4], [15.5, 10], [15.5, 16], [12.5, 19], [7.5, 18.5], [4, 13]]),
+        () => ellipsePath(ctx, 12, 19.5, 4.6, 4),
       ], fill, 2.2);
-      // paw pad hint
-      ctx.fillStyle = alpha(C.cream, 0.35);
-      ellipsePath(ctx, 9, 21.5, 3, 2);
+      // tiny paw: a soft cream pad and two toe nicks
+      ctx.fillStyle = alpha(C.cream, 0.4);
+      ellipsePath(ctx, 12.2, 20.2, 2.6, 1.8);
       ctx.fill();
+      ctx.strokeStyle = alpha(outline(fill), 0.7);
+      ctx.lineWidth = 1.1;
+      for (const x of [10.8, 13.8]) {
+        ctx.beginPath();
+        ctx.moveTo(x, 21.6);
+        ctx.lineTo(x + 0.3, 23.3);
+        ctx.stroke();
+      }
     });
   paint(HERO_KEYS.armL, FUR_FAR);
   paint(HERO_KEYS.armR, FUR);
@@ -389,14 +472,22 @@ function paintFoot(scene: Phaser.Scene): void {
   });
 }
 
+/** A fur bump on the tail's outer edge: [arc-length fraction along the edge, radius]. */
+type Bump = [number, number];
+
 /**
  * Tail painters. Both are defined in rig space around the tail base and translated into their texture.
- * Fat crescent (straight) and a "?" over the head (curl); cream underside along the inner edge, five tufts outside.
+ * A fluffy squirrel tail: a soft comma/S from the lower back, up and over behind the head. The outer edge carries
+ * irregular fur bumps (radius and spacing vary so it reads as fur, not teeth); the inner edge is smooth and carries
+ * a soft cream underside that fades toward the rounded tip. The curl variant hooks its top third into a "?".
  */
-function paintTailTexture(scene: Phaser.Scene, key: string, center: Pt[], halfW: number[], tuftR: number, originOut: RigPoint): void {
+function paintTailTexture(scene: Phaser.Scene, key: string, ctrl: Pt[], halfWCtrl: number[], bumps: Bump[], originOut: RigPoint): void {
+  const center = smoothCurve(ctrl);
+  const halfW = smoothValues(halfWCtrl);
+  const n = center.length;
   const rib = ribbon(center, halfW);
-  const allPts = [...rib.inner, ...rib.outer, ...center];
-  const pad = tuftR + 6;
+  const allPts = [...rib.inner, ...rib.outer];
+  const pad = Math.max(...bumps.map((b) => b[1])) + 6;
   const minX = Math.min(...allPts.map((p) => p[0])) - pad, maxX = Math.max(...allPts.map((p) => p[0])) + pad;
   const minY = Math.min(...allPts.map((p) => p[1])) - pad, maxY = Math.max(...allPts.map((p) => p[1])) + pad;
   const W = Math.ceil(maxX - minX), H = Math.ceil(maxY - minY);
@@ -405,38 +496,50 @@ function paintTailTexture(scene: Phaser.Scene, key: string, center: Pt[], halfW:
   originOut.y = (base[1] - minY) / H;
   paintTexture(scene, key, W, H, (ctx) => {
     ctx.translate(-minX, -minY);
-    const T: Pt[] = (() => {
-      // five tufts spread along the outer edge, skipping the base
-      const out: Pt[] = [];
-      const edge = rib.outer;
-      for (let i = 0; i < 5; i++) {
-        const t = 0.22 + (0.78 * i) / 4;
-        const f = t * (edge.length - 1);
-        const i0 = Math.floor(f), i1 = Math.min(edge.length - 1, i0 + 1), k = f - i0;
-        out.push([edge[i0][0] + (edge[i1][0] - edge[i0][0]) * k, edge[i0][1] + (edge[i1][1] - edge[i0][1]) * k]);
-      }
-      return out;
-    })();
-    const tuftScale = [0.86, 1, 1.12, 1, 0.9];
+    // fur bumps: centers tucked a third of the radius inside the edge so they swell softly instead of spiking
+    const tufts = bumps.map(([t, r]) => {
+      const { i, k } = alongEdge(rib.outer, t);
+      const e = lerpPt(rib.outer, i, k), c = lerpPt(center, i, k);
+      const dx = c[0] - e[0], dy = c[1] - e[1], d = Math.hypot(dx, dy) || 1;
+      const a = rib.outer[Math.max(0, i - 1)], b = rib.outer[Math.min(n - 1, i + 2)];
+      return { x: e[0] + (dx / d) * r * 0.35, y: e[1] + (dy / d) * r * 0.35, r, rot: Math.atan2(b[1] - a[1], b[0] - a[0]) };
+    });
+    const tip = center[n - 1], tipR = halfW[n - 1];
     unionOutlined(ctx, [
       () => blobPath(ctx, rib.outlinePts),
-      ...T.map((p, i) => () => ellipsePath(ctx, p[0], p[1], tuftR * tuftScale[i], tuftR * tuftScale[i] * 0.9)),
+      // tufts stretched a little along the fur flow
+      ...tufts.map((b) => () => ellipsePath(ctx, b.x, b.y, b.r * 1.12, b.r * 0.9, b.rot)),
+      () => ellipsePath(ctx, tip[0], tip[1], tipR, tipR),
     ], FUR, LINE_W);
-    // cream underside: a band along the inner edge (facing the body and head), inset from the outline
-    const inner = ribbon(center, halfW.map((h) => h - 3)).inner;
-    const mid = ribbon(center, halfW.map((h) => Math.max(1, h * 0.06))).inner;
-    const band: Pt[] = [...inner.slice(1), ...mid.slice(1).reverse()];
-    ctx.fillStyle = mix(C.cream, FUR, 0.06);
-    blobPath(ctx, band);
+    // cream underside: a soft band hugging the inner curve, about 35% of the width, fading out toward the tip
+    const fade = (i: number): number => {
+      const f = Math.min(1, Math.max(0, (0.92 - i / (n - 1)) / 0.5));
+      return f * f * (3 - 2 * f);
+    };
+    let end = n - 1;
+    while (end > 1 && fade(end) <= 0.02) end--;
+    const edgeIn = ribbon(center, halfW.map((h) => h - 3)).inner;
+    const bandOf = (frac: number): Pt[] => ribbon(center, halfW.map((h, i) => Math.max(0.5, h - 3 - frac * h * fade(i)))).inner;
+    const bandPoly = (inner: Pt[]): Pt[] => [...edgeIn.slice(0, end + 1), ...inner.slice(0, end + 1).reverse()];
+    ctx.fillStyle = mix(C.cream, FUR, 0.35);
+    blobPath(ctx, bandPoly(bandOf(0.7)));
     ctx.fill();
-    // a few soft fur strokes on the outer side for volume
-    ctx.strokeStyle = alpha(FUR_LINE, 0.35);
-    ctx.lineWidth = 1.4;
-    for (let i = 1; i < center.length - 1; i++) {
-      const p = center[i], l = rib.outer[i];
+    ctx.fillStyle = alpha(mix(C.cream, FUR, 0.12), 0.7);
+    blobPath(ctx, bandPoly(bandOf(0.3)));
+    ctx.fill();
+    // a few soft fur strokes following the curve on the outer half, for volume
+    ctx.strokeStyle = alpha(FUR_LINE, 0.26);
+    ctx.lineWidth = 1.5;
+    for (const t of [0.3, 0.47, 0.64, 0.8]) {
+      const { i } = alongEdge(center, t);
+      const i0 = Math.max(0, Math.min(n - 5, i - 2));
       ctx.beginPath();
-      ctx.moveTo(p[0] + (l[0] - p[0]) * 0.55, p[1] + (l[1] - p[1]) * 0.55);
-      ctx.lineTo(p[0] + (l[0] - p[0]) * 0.85, p[1] + (l[1] - p[1]) * 0.85);
+      for (let j = i0; j < i0 + 5; j++) {
+        const p = center[j], o = rib.outer[j];
+        const x = p[0] + (o[0] - p[0]) * 0.5, y = p[1] + (o[1] - p[1]) * 0.5;
+        if (j === i0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
       ctx.stroke();
     }
   });
@@ -445,22 +548,23 @@ function paintTailTexture(scene: Phaser.Scene, key: string, center: Pt[], halfW:
 function paintTails(scene: Phaser.Scene): void {
   const b = RIG.tailBase;
   const rel = (pts: Pt[]): Pt[] => pts.map(([x, y]) => [b.x + x, b.y + y]);
-  // straight: a fat crescent rising behind the body and curling forward above the head
+  // straight: from the lower back, out and up in a soft S, curving over behind the head; the tip pokes up just
+  // above the crown between the ears. Fattest (~50 px with the fur) mid-way, narrower at the base, rounded tip.
   paintTailTexture(
     scene,
     HERO_KEYS.tailStraight,
-    rel([[2, 2], [-12, -14], [-21, -40], [-22, -70], [-14, -96], [2, -114], [18, -122]]),
-    [8, 13, 16, 17, 15, 12, 8],
-    9,
+    rel([[3, 0], [-13, 3], [-25, -10], [-32, -32], [-32, -54], [-26, -74], [-15, -88], [-1, -97], [12, -99]]),
+    [7, 10, 14, 18, 19, 18, 15, 11, 7.5],
+    [[0.1, 7], [0.19, 10.5], [0.3, 7.5], [0.4, 12.5], [0.52, 9], [0.63, 12], [0.75, 8], [0.85, 10], [0.93, 6]],
     HERO_TEX.tailStraightOrigin,
   );
-  // curl: the "?" over the head; rises up the back then hooks forward and down over the crown
+  // curl: the same tail, its top third coiling into a tighter hook over the head so it reads as a "?"
   paintTailTexture(
     scene,
     HERO_KEYS.tailCurl,
-    rel([[2, 2], [-10, -16], [-18, -44], [-16, -74], [-4, -100], [16, -120], [40, -124], [56, -110], [54, -94]]),
-    [8, 12, 14, 14, 13, 12, 10, 8, 6],
-    8,
+    rel([[3, 0], [-13, 3], [-25, -10], [-32, -32], [-32, -54], [-26, -76], [-14, -94], [4, -108], [24, -112], [40, -102], [44, -88]]),
+    [7, 10, 14, 18, 19, 18, 15, 12, 10, 7.5, 6],
+    [[0.1, 7], [0.19, 10.5], [0.3, 7.5], [0.4, 12.5], [0.52, 9], [0.62, 11.5], [0.72, 8], [0.81, 9], [0.9, 6.5], [0.96, 5]],
     HERO_TEX.tailCurlOrigin,
   );
 }
