@@ -1,7 +1,7 @@
 {
   "name": "Little Monsoon",
   "short_name": "Monsoon",
-  "description": "A tiny cozy camping trip by the water.",
+  "description": "Little Monsoon: a tiny, cozy camping trip. Fish, forage, cook by the fire, and meet the gentle guardian of the water.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
