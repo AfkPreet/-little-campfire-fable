@@ -150,6 +150,20 @@ export const STRINGS = {
     letGo: 'Let go',
     newRibbon: 'NEW!',
     rodHint: 'Something big is down there... a sturdier rod might help.',
+    needRod: "You'll need a rod. {Shopkeeper}'s shop has one!",
+    letGoToast: 'Swim free, little one!',
+    nothingBiting: 'Just ripples today... try another time.',
+    baitNone: 'Bait: none',
+    baitLabel: '{Bait} x{n}',
+    baitWiggly: 'Wiggly',
+    baitSparkle: 'Sparkle',
+  },
+
+  /** Foraging (M1): spot toasts. */
+  foraging: {
+    picked: '+{n} {Item}',
+    asleep: 'Asleep for the night',
+    pickedOut: 'Picked clean for today. It will grow back by morning.',
   },
 
   cooking: {

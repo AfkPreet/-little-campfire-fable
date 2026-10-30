@@ -35,6 +35,8 @@ const SHOTS = {
     { name: 'title', q: 'scene=title', settle: 1200 },
     { name: 'intro', q: 'scene=intro', settle: 800 },
     { name: 'shop', q: 'scene=shop&state=fresh', settle: 900 },
+    { name: 'camp-day', q: 'scene=camp&state=midtrip&time=day', settle: 1500 },
+    { name: 'camp-night', q: 'scene=camp&state=midtrip&time=night', settle: 1500 },
     { name: 'cooking', q: 'scene=cooking&state=midtrip', settle: 900 },
     { name: 'day-summary', q: 'scene=daysummary&state=midtrip', settle: 2600 },
   ],

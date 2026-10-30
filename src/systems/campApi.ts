@@ -1,26 +1,89 @@
 /**
- * campApi: debug hooks on window.__game.api (DEBUG.enabled builds) for the smoke test and screenshots. Later systems
- * (fishing, foraging, cooking) extend the same object: `camp.api.fish = ...`.
+ * campApi: debug hooks on window.__game.api (DEBUG.enabled builds) for the smoke test and screenshots
+ * (scripts/smoke.mjs drives exactly this surface). Fishing and foraging are reached through their flows.
  */
+import Phaser from 'phaser';
 import type { CampScene } from '@/scenes/Camp';
+import { SCENES } from '@/scenes/Boot';
 import { DEBUG } from '@/config/debug';
-import { getState, pitchTent as storePitchTent, update, type GameState } from '@/state';
+import {
+  addDish, buyGear, canAfford, discoverRecipe, earn, eatDish, getState, markDirty, pitchTent as storePitchTent, recordCook,
+  removeFish, removeForage, removePantry, saveNow as storeSaveNow, update, type GameState,
+} from '@/state';
 import { dayTFor, phaseAt } from '@/world/lighting';
-import type { TentId, WeatherKind } from '@/data/types';
+import { ESSENTIALS_TAGGED, GEAR_BY_ID, isFishId, isForageId, isPantryId, matchRecipe } from '@/data';
+import type { CookwareId, DishId, FishId, ForageId, IngredientId, TentId, WeatherKind } from '@/data/types';
 import { LAYOUT } from '@/world/layout';
+import { fishingOf } from '@/systems/fishing';
+import { foragingOf } from '@/systems/foraging';
+
+export const CAMP_API = {
+  /** auto-continue the DaySummary this long after it opens */
+  summaryContinueMs: 300,
+  summaryPollMs: 100,
+  summaryWaitMaxMs: 8000,
+  /** scripts cast from the jetty end toward this water point */
+  castTarget: { x: LAYOUT.jetty.x1 + 160, y: 560 },
+} as const;
 
 export interface CampApi {
   walkTo(x: number): Promise<void>;
   /** Pitch the best owned tent on spot 0-2 at once (no peg taps). */
   pitchTent(spot: number): boolean;
-  /** Night -> summary -> dawn. Resolves at dawn. */
+  /** Night -> summary -> dawn. Resolves at dawn (the summary auto-continues in debug builds). */
   sleep(): Promise<void>;
   setTime(name: string): void;
   setWeather(kind: WeatherKind): void;
   state(): GameState;
+  /** Give money if needed, then buy the Day 1 essentials (leaf tent, bamboo rod, kettle). */
+  buyEssentials(): Record<string, boolean>;
+  /** Forage a spot (data or layout id; default: the herb patch, else the first available). Resolves when the items landed. */
+  forage(spotId?: string): Promise<{ id: ForageId; n: number } | null>;
+  /** Cast; `force` makes the next bite that species and auto-hooks / keeps. Resolves after Keep. */
+  fish(opts?: { force?: FishId }): Promise<void>;
+  /** Cook without the overlay: same steps as the Cooking scene. Returns the dish id, or null when ingredients are missing. */
+  cook(cookwareId: CookwareId, ingredientIds: IngredientId[]): DishId | null;
+  /** Eat the most recently cooked dish; returns the Contentment added, or null. */
+  eatLastDish(): number | null;
+  /** Flush the save to storage now. */
+  saveNow(): boolean;
   scene: CampScene;
-  /** Extension point for later agents (fish(), forage(), cook(), eatLastDish(), buyEssentials()...). */
+  /** Extension point for later agents. */
   [k: string]: unknown;
+}
+
+function hasIngredient(s: GameState, id: IngredientId): boolean {
+  if (isPantryId(id)) return s.inventory.pantry[id] > 0;
+  if (isForageId(id)) return s.inventory.forage[id] > 0;
+  if (isFishId(id)) return s.inventory.fish.some((f) => f.id === id);
+  return id === 'any_fish' && s.inventory.fish.length > 0;
+}
+
+/** The Cooking scene's finishCooking() steps, without the overlay. */
+export function cookDirect(cookwareId: CookwareId, ingredientIds: IngredientId[]): DishId | null {
+  const s = getState();
+  if (!s.inventory.gear[cookwareId]) return null;
+  // resolve 'any_fish' to a held species, then check availability (counting duplicates)
+  const ids: IngredientId[] = ingredientIds.map((id) => (id === 'any_fish' ? (s.inventory.fish[0]?.id ?? id) : id));
+  const need = new Map<string, number>();
+  for (const id of ids) need.set(id, (need.get(id) ?? 0) + 1);
+  for (const [id, n] of need) {
+    if (!hasIngredient(s, id as IngredientId)) return null;
+    const have = isPantryId(id) ? s.inventory.pantry[id] : isForageId(id) ? s.inventory.forage[id] : s.inventory.fish.filter((f) => f.id === id).length;
+    if (have < n) return null;
+  }
+  const match = matchRecipe(cookwareId, ids);
+  for (const id of ids) {
+    if (isPantryId(id)) removePantry(id);
+    else if (isForageId(id)) removeForage(id);
+    else if (isFishId(id)) removeFish(id);
+  }
+  const fishId = ids.find((id): id is FishId => isFishId(id));
+  addDish({ id: match.recipeId, sell: match.sellValue, contentment: match.contentment, ...(fishId ? { fishId } : {}) });
+  recordCook(match.recipeId);
+  if (match.isRecipe && match.recipeId !== 'mystery_mush') discoverRecipe(match.recipeId);
+  markDirty();
+  return match.recipeId;
 }
 
 export function installCampApi(camp: CampScene): CampApi {
@@ -40,7 +103,11 @@ export function installCampApi(camp: CampScene): CampApi {
       }
       return ok;
     },
-    sleep: () => camp.restFlow.sleep(),
+    sleep: async () => {
+      const night = camp.restFlow.sleep();
+      if (DEBUG.enabled) autoContinueSummary(camp);
+      await night;
+    },
     setTime: (name) => {
       update((s) => {
         s.dayT = dayTFor(name);
@@ -57,7 +124,52 @@ export function installCampApi(camp: CampScene): CampApi {
       camp.clock.applyNow();
     },
     state: () => getState(),
+    buyEssentials: () => {
+      const out: Record<string, boolean> = {};
+      for (const id of ESSENTIALS_TAGGED) {
+        const price = GEAR_BY_ID[id].price;
+        if (!getState().inventory.gear[id] && !canAfford(price)) earn(price - getState().money);
+        out[id] = getState().inventory.gear[id] === true || buyGear(id);
+      }
+      markDirty();
+      return out;
+    },
+    forage: (spotId) => foragingOf(camp)?.forage(spotId) ?? Promise.resolve(null),
+    fish: (opts = {}) => {
+      const flow = fishingOf(camp);
+      if (!flow) return Promise.resolve();
+      const t = CAMP_API.castTarget;
+      return flow.onWaterTap(t.x, t.y, { force: opts.force, auto: true });
+    },
+    cook: (cookwareId, ingredientIds) => cookDirect(cookwareId, ingredientIds),
+    eatLastDish: () => {
+      const dishes = getState().inventory.dishes;
+      if (dishes.length === 0) return null;
+      const added = eatDish(dishes[dishes.length - 1].id);
+      camp.hero.setExpression('munching');
+      camp.time.delayedCall(1200, () => camp.hero.setExpression('happy'));
+      markDirty();
+      return added;
+    },
+    saveNow: () => storeSaveNow(),
   };
   if (DEBUG.enabled) window.__game.api = api;
   return api;
+}
+
+/** Debug: once the DaySummary overlay is up, tap it closed after a beat so scripted sleeps resolve. */
+function autoContinueSummary(camp: CampScene): void {
+  const started = camp.time.now;
+  const poll = (): void => {
+    const summary = camp.scene.get(SCENES.daysummary);
+    if (summary && summary.scene.isActive()) {
+      camp.time.delayedCall(CAMP_API.summaryContinueMs, () => {
+        if (summary.scene.isActive()) summary.input.emit(Phaser.Input.Events.POINTER_UP);
+        else camp.events.emit('summary:closed');
+      });
+      return;
+    }
+    if (camp.time.now - started < CAMP_API.summaryWaitMaxMs) camp.time.delayedCall(CAMP_API.summaryPollMs, poll);
+  };
+  camp.time.delayedCall(CAMP_API.summaryPollMs, poll);
 }

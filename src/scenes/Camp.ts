@@ -22,6 +22,8 @@ import { TentFlow } from '@/systems/tentFlow';
 import { FireFlow } from '@/systems/fireFlow';
 import { RestFlow } from '@/systems/restFlow';
 import { installCampApi, type CampApi } from '@/systems/campApi';
+import { installFishing } from '@/systems/fishing';
+import { installForaging } from '@/systems/foraging';
 
 /** Camera and input tuning for the Camp scene. */
 export const CAMP = {
@@ -113,6 +115,8 @@ export class CampScene extends Phaser.Scene implements CampContext {
     this.input.on('pointerup', this.onPointerUp, this);
     this.events.once('shutdown', this.shutdown, this);
 
+    installFishing(this);
+    installForaging(this);
     this.api = installCampApi(this);
     this.time.delayedCall(CAMP.readyDelayMs, () => {
       window.__game.ready = true;

@@ -11,6 +11,8 @@ import { paintCompanionTextures } from '@/art/companion';
 import { paintShopkeeperTextures } from '@/art/shopkeeper';
 import { paintGuardianTextures } from '@/art/guardian';
 import { paintItemTextures } from '@/art/items';
+import { paintFish } from '@/art/fish';
+import { paintFishingTextures } from '@/art/fishing';
 import { paintHudTextures } from '@/art/hud';
 import { paintIntroTextures } from '@/art/intro';
 import { ensureUiTextures } from '@/ui/kit';
@@ -105,6 +107,8 @@ export class BootScene extends Phaser.Scene {
     paintShopkeeperTextures(this);
     paintGuardianTextures(this);
     paintItemTextures(this);
+    paintFish(this);
+    paintFishingTextures(this);
     paintHudTextures(this);
     paintIntroTextures(this);
   }
