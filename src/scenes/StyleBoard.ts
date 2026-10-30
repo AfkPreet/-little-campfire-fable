@@ -4,6 +4,7 @@ import { DEBUG } from '@/config/debug';
 
 const BOARDS = import.meta.glob<{ default: (scene: Phaser.Scene) => void | Promise<void> }>('../art/boards/*.ts');
 import { applyViewport } from '@/config/layout';
+import { uiDemo } from '@/ui/demo';
 import { PALETTE, LIGHT_KEYS, hexToInt } from '@/config/palette';
 import { paintTexture, img, blobPath, fillOutlined, kawaiiEye, blushOval, contactShadow } from '@/art/pipeline';
 
@@ -17,6 +18,10 @@ export class StyleBoardScene extends Phaser.Scene {
   }
 
   create(): void {
+    if (DEBUG.board === 'ui') {
+      uiDemo(this);
+      return;
+    }
     const v = applyViewport(this);
     this.cameras.main.setBackgroundColor(hexToInt(PALETTE.cream));
     this.game.events.on('viewport', () => applyViewport(this));

@@ -22,6 +22,9 @@ const SHOTS = {
     { name: 'board-characters', q: 'scene=styleboard&board=characters' },
     { name: 'board-landscape', q: 'scene=styleboard&board=landscape' },
     { name: 'board-ui', q: 'scene=styleboard&board=ui' },
+    { name: 'board-npcs', q: 'scene=styleboard&board=npcs', settle: 1200 },
+    { name: 'board-hero', q: 'scene=styleboard&board=hero', settle: 1400 },
+    { name: 'board-fx', q: 'scene=styleboard&board=fx' },
   ],
 };
 

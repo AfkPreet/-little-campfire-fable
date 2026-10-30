@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "browser:install": "playwright install chromium",
     "shots": "node scripts/shots.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "check:data": "node scripts/check-data.mjs"
   },
   "dependencies": {
     "@fontsource/baloo-2": "5.3.0",

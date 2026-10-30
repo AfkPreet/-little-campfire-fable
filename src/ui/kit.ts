@@ -83,6 +83,10 @@ export const TEX = {
   btnSecondary: 'ui-btn-secondary',
   btnDisabled: 'ui-btn-disabled',
   iconBtn: 'ui-icon-btn',
+  iconBtnDisabled: 'ui-icon-btn-disabled',
+  track: 'ui-track',
+  toggleOff: 'ui-toggle-off',
+  toggleOn: 'ui-toggle-on',
   knob: 'ui-knob',
   knobSmall: 'ui-knob-sm',
   disc: 'ui-disc',
@@ -140,12 +144,16 @@ export const BUBBLE_SPEC: NineSpec = panelSpec(TEX.bubbleBody, UI.bubbleRadius, 
 export const PILL_SPEC: NineSpec = pillSpec(TEX.pill, UI.pillH, PILL_MARGIN);
 /** Slider fill pill (no shadow): 10 tall. */
 export const PILL_FILL_SPEC: NineSpec = pillSpec(TEX.pillFill, 10, { l: 2, r: 2, t: 2, b: 2 });
+/** Slider track pill (no shadow, darker cream): 10 tall. */
+export const TRACK_SPEC: NineSpec = pillSpec(TEX.track, 10, { l: 2, r: 2, t: 2, b: 2 });
+/** Toggle switch pill (fixed size, not sliced): visible 64x32 inside an 80x48 texture (shadow margin). */
+export const TOGGLE_SIZE = { w: 64, h: 32, texW: 80, texH: 48, knob: 28, travel: 16 } as const;
 
 const buttonSpecs = new Map<string, NineSpec>();
 export type ButtonSkin = 'primary' | 'secondary' | 'disabled';
 
 /** Button 3-slice spec for a skin and visible height (painted lazily for non-default heights). */
-export function buttonSpec(scene: Phaser.Scene, skin: ButtonSkin, h = UI.buttonH): NineSpec {
+export function buttonSpec(scene: Phaser.Scene, skin: ButtonSkin, h: number = UI.buttonH): NineSpec {
   const hh = Math.max(UI.minTouch, Math.round(h));
   const key = hh === UI.buttonH ? buttonKey(skin) : `${buttonKey(skin)}-${hh}`;
   let spec = buttonSpecs.get(key);
@@ -205,7 +213,7 @@ export function nineCard(scene: Phaser.Scene, x: number, y: number, w: number, h
   return nine(scene, CARD_SPEC, x, y, w, h, add);
 }
 /** A button background 3-slice at logical width (visible height = spec height). */
-export function nineButton(scene: Phaser.Scene, skin: ButtonSkin, x: number, y: number, w: number, h = UI.buttonH, add = true): Phaser.GameObjects.NineSlice {
+export function nineButton(scene: Phaser.Scene, skin: ButtonSkin, x: number, y: number, w: number, h: number = UI.buttonH, add = true): Phaser.GameObjects.NineSlice {
   const spec = buttonSpec(scene, skin, h);
   return nine(scene, spec, x, y, w, spec.visibleH ?? h, add);
 }
@@ -372,21 +380,27 @@ export function paintUiTextures(scene: Phaser.Scene): void {
       ctx.strokeStyle = COLORS.cardLine;
       ctx.stroke();
     });
-    // A complete single-size bubble (160x64 body) for quick labels.
+    // A complete single-size bubble (160x64 body) for quick labels: body and tail are ONE path, so one outline.
     paintTexture(scene, TEX.bubble, 200, 112, (ctx) => {
-      const bx = 20, by = 16, bw = 160, bh = 64;
-      paintPanel(ctx, bx, by, bw, bh, UI.bubbleRadius, { fill: cream, line: COLORS.cardLine });
-      ctx.beginPath();
-      ctx.moveTo(100 - 14, by + bh - 1);
-      ctx.quadraticCurveTo(100 - 2, by + bh + 2, 100, by + bh + 16);
-      ctx.quadraticCurveTo(100 + 2, by + bh + 2, 100 + 14, by + bh - 1);
-      ctx.closePath();
-      ctx.fillStyle = cream;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(100 - 14, by + bh - 1);
-      ctx.quadraticCurveTo(100 - 2, by + bh + 2, 100, by + bh + 16);
-      ctx.quadraticCurveTo(100 + 2, by + bh + 2, 100 + 14, by + bh - 1);
+      const bx = 20, by = 16, bw = 160, bh = 64, r = UI.bubbleRadius, tx = bx + bw / 2, ty = by + bh;
+      const path = () => {
+        ctx.beginPath();
+        ctx.moveTo(bx + r, by);
+        ctx.arcTo(bx + bw, by, bx + bw, by + r, r);
+        ctx.arcTo(bx + bw, ty, bx + bw - r, ty, r);
+        ctx.lineTo(tx + 14, ty);
+        ctx.quadraticCurveTo(tx + 2, ty + 2, tx, ty + 16);
+        ctx.quadraticCurveTo(tx - 2, ty + 2, tx - 14, ty);
+        ctx.arcTo(bx, ty, bx, ty - r, r);
+        ctx.arcTo(bx, by, bx + r, by, r);
+        ctx.closePath();
+      };
+      withInkShadow(ctx, () => {
+        path();
+        ctx.fillStyle = cream;
+        ctx.fill();
+      });
+      path();
       ctx.lineWidth = UI.outline;
       ctx.strokeStyle = COLORS.cardLine;
       ctx.stroke();
@@ -402,6 +416,21 @@ export function paintUiTextures(scene: Phaser.Scene): void {
     paintTexture(scene, f.key, f.texW, f.texH, (ctx) => {
       paintPanel(ctx, fm.l, fm.t, f.texW - fm.l - fm.r, 10, 5, { fill: COLORS.trackFill, line: outline(COLORS.trackFill, 0.12), shadow: false, lineW: 1.5 });
     });
+    const t = TRACK_SPEC, tm = t.margin;
+    paintTexture(scene, t.key, t.texW, t.texH, (ctx) => {
+      paintPanel(ctx, tm.l, tm.t, t.texW - tm.l - tm.r, 10, 5, { fill: COLORS.track, line: shade(COLORS.track, -0.12), shadow: false, lineW: 1.5 });
+    });
+  }
+  // Toggle pills (off: track cream, on: sage), shadow baked
+  {
+    const T = TOGGLE_SIZE;
+    const x = (T.texW - T.w) / 2, y = (T.texH - T.h) / 2 - 2;
+    paintTexture(scene, TEX.toggleOff, T.texW, T.texH, (ctx) => {
+      paintPanel(ctx, x, y, T.w, T.h, T.h / 2, { fill: COLORS.track, line: shade(COLORS.track, -0.14), shadowAlpha: 0.1 });
+    });
+    paintTexture(scene, TEX.toggleOn, T.texW, T.texH, (ctx) => {
+      paintPanel(ctx, x, y, T.w, T.h, T.h / 2, { fill: COLORS.trackOn, line: outline(COLORS.trackOn), shadowAlpha: 0.1 });
+    });
   }
   // Buttons at the default height
   buttonSpec(scene, 'primary');
@@ -412,6 +441,7 @@ export function paintUiTextures(scene: Phaser.Scene): void {
   const discTex = (key: string, d: number, st: PanelStyle) =>
     paintTexture(scene, key, d + 36, d + 36, (ctx, w, h) => paintDisc(ctx, w / 2, h / 2 - 2, d, st));
   discTex(TEX.iconBtn, UI.iconButton, { fill: cream, line: COLORS.cardLine, sheen: 0.3 });
+  discTex(TEX.iconBtnDisabled, UI.iconButton, skinStyle('disabled'));
   discTex(TEX.knob, 44, { fill: cream, line: COLORS.cardLine, sheen: 0.3 });
   discTex(TEX.knobSmall, 28, { fill: cream, line: COLORS.cardLine, sheen: 0.3, shadowAlpha: 0.12 });
 
@@ -699,6 +729,14 @@ export function paintUiTextures(scene: Phaser.Scene): void {
   paintTexture(scene, TEX.grain, 96, 96, (ctx, w, h) => {
     paperGrain(ctx, 0, 0, w, h, PALETTE.ink, 0.045, 11);
   });
+}
+
+const painted = new WeakSet<Phaser.Textures.TextureManager>();
+/** Widgets call this in their constructors: paints the kit once per game (cheap after the first call). */
+export function ensureUiTextures(scene: Phaser.Scene): void {
+  if (painted.has(scene.textures)) return;
+  painted.add(scene.textures);
+  paintUiTextures(scene);
 }
 
 // ---------- small factories ----------
