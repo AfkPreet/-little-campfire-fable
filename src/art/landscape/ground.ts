@@ -44,7 +44,7 @@ function paintStrip(ctx: Ctx, w: number, h: number): void {
     [1, EARTH_DEEP],
   ]);
   ctx.fillRect(0, T + 14, w, h - T - 14);
-  wrapped(ctx, w, h, () => {
+  wrapped(ctx, w, h, (ctx) => {
     // root stripes and pebbles in the earth
     ctx.strokeStyle = alpha(EARTH_DEEP, 0.55);
     ctx.lineWidth = 2;
@@ -156,13 +156,22 @@ function paintBankEnd(ctx: Ctx, w: number, h: number): void {
   ctx.quadraticCurveTo(w * 0.6, T + 100, w * 0.3, h);
   ctx.lineTo(0, h);
   ctx.closePath();
-  ctx.fillStyle = linearGradient(ctx, 0, T, 0, h, [
-    [0, GRASS],
-    [0.18, GRASS_DEEP],
-    [0.3, EARTH],
+  // the same earth and grass gradients as the strip (same absolute y stops) so the join at the shore is seamless
+  ctx.fillStyle = linearGradient(ctx, 0, T + 14, 0, GROUND_SIZES.strip.h, [
+    [0, EARTH],
+    [0.35, EARTH],
     [1, EARTH_DEEP],
   ]);
   ctx.fill();
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = linearGradient(ctx, 0, T, 0, T + 30, [
+    [0, GRASS],
+    [0.6, GRASS_DEEP],
+    [1, mix(GRASS_DEEP, EARTH, 0.6)],
+  ]);
+  ctx.fillRect(0, 0, w, T + 30);
+  ctx.restore();
   ctx.lineWidth = 2.4;
   ctx.strokeStyle = outline(EARTH, 0.22);
   ctx.beginPath();

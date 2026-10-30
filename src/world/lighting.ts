@@ -59,9 +59,11 @@ export type Lighting = {
   key: LightKey;
   skyTop: string;
   skyHorizon: string;
-  /** actual colors for white-painted bands */
+  /** actual colors for white-painted bands: three ridge chains (far -> ridgeMid -> mid) and the estate slope */
   far: string;
+  ridgeMid: string;
   mid: string;
+  estate: string;
   /** multiply tints for real-colored layers */
   nearTint: string;
   groundTint: string;
@@ -94,6 +96,10 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.58), mid: mix(ridge, k.horizon, 0.26),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.moss, k.top, 0.5), k.horizon, 0.3),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.sage, C.butter, 0.4), k.horizon, 0.3),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(C.sage, k.horizon, 0.32),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.sage, k.horizon, 0.55), ridge, 0.25),
         nearTint: mix(C.cream, C.peach, 0.28), groundTint: mix(C.cream, C.lavender, 0.22), fgTint: mix(C.cream, C.lavender, 0.3),
         charTint: mix(C.cream, C.peach, 0.18), waterTint: mix(C.cream, k.horizon, 0.3),
         mistColor: mix(k.horizon, C.cream, 0.4), mist: 0.6, stars: 0.08, moon: 0, sun: 0.35, warmth: 0.25, ambient: 0.8, vignette: 0.12,
@@ -136,6 +142,7 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.45), mid: mix(ridge, k.horizon, 0.15),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.45), mix(ridge, k.horizon, 0.15), 0.5), estate: shade(mix(C.moss, k.top, 0.6), -0.12),
         nearTint: nightMul, groundTint: shade(nightMul, -0.08), fgTint: shade(nightMul, -0.15),
         charTint: mix(nightMul, C.cream, 0.3), waterTint: mix(k.horizon, C.powder, 0.2),
         mistColor: mix(k.horizon, C.lavender, 0.3), mist: 0.3, stars: 1, moon: 1, sun: 0, warmth: 1, ambient: 0.35, vignette: 0.3,
@@ -185,7 +192,7 @@ export function lightingAt(dayT: number, weather: Weather = { rain: 0, mist: 0 }
   const mistW = Math.max(0, Math.min(1, weather.mist));
   const L: Lighting = { ...base, dayT: t, key, rain };
   if (rain > 0) {
-    for (const k of ['skyTop', 'skyHorizon', 'far', 'mid', 'nearTint', 'groundTint', 'fgTint', 'charTint', 'waterTint', 'mistColor'] as const) {
+    for (const k of ['skyTop', 'skyHorizon', 'far', 'ridgeMid', 'mid', 'estate', 'nearTint', 'groundTint', 'fgTint', 'charTint', 'waterTint', 'mistColor'] as const) {
       L[k] = rainify(L[k], rain);
     }
     L.mist = Math.min(1, L.mist + 0.3 * rain);
@@ -198,7 +205,9 @@ export function lightingAt(dayT: number, weather: Weather = { rain: 0, mist: 0 }
   if (mistW > 0) {
     L.mist = Math.min(1, L.mist + 0.45 * mistW);
     L.far = mix(L.far, L.skyHorizon, 0.5 * mistW);
+    L.ridgeMid = mix(L.ridgeMid, L.skyHorizon, 0.4 * mistW);
     L.mid = mix(L.mid, L.skyHorizon, 0.3 * mistW);
+    L.estate = mix(L.estate, L.skyHorizon, 0.25 * mistW);
     L.skyHorizon = mix(L.skyHorizon, C.cream, 0.25 * mistW);
     L.sun *= 1 - 0.5 * mistW;
   }

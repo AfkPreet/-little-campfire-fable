@@ -13,7 +13,7 @@ export const MIST_H = 110;
 
 function paintMist(ctx: Ctx, w: number, h: number): void {
   const rnd = seeded(77);
-  wrapped(ctx, w, h, () => {
+  wrapped(ctx, w, h, (ctx) => {
     // overlapping lumpy ellipses, each a soft radial falloff; denser along the middle line
     for (let i = 0; i < 14; i++) {
       const cx = rnd() * w;

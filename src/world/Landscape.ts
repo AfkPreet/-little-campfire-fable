@@ -106,7 +106,7 @@ export type LandscapeLayers = {
 
 type Band = { c: Container; f: number };
 type Sway = { img: Image; w: number; p: number; a: number };
-type Ring = { img: Image; t: number; dur: number; sc: number };
+type Ring = { img: Image; t: number; dur: number; sc: number; fresh: boolean };
 
 const B = 0.5; // 1 / ART_SCALE
 const SKY_H = BAND_Y.skyBottom;
@@ -373,7 +373,7 @@ export class Landscape {
     });
     for (let i = 0; i < RING_COUNT; i++) {
       const im = this.mk(0, 0, WATER_KEYS.ring).setAlpha(0);
-      this.rings.push({ img: im, t: Math.random() * 1200, dur: 900 + Math.random() * 500, sc: 1 });
+      this.rings.push({ img: im, t: Infinity, dur: 900 + Math.random() * 500, sc: 1, fresh: true });
       water.add(im);
     }
   }
@@ -690,16 +690,17 @@ export class Landscape {
     for (const r of this.rings) {
       r.t += dts * 1000;
       if (r.t >= r.dur) {
-        r.t = 0;
         r.dur = 800 + Math.random() * 600;
+        r.t = r.fresh ? Math.random() * r.dur : 0; // stagger the first wave
+        r.fresh = false;
         const depth = Math.random();
         r.img.setPosition(Phaser.Math.Between(x0, x1), WATER_TOP + 14 + depth * (LAYOUT.groundY - WATER_TOP - 24));
-        r.sc = 0.45 + depth * 0.9;
+        r.sc = 0.9 + depth * 1.3;
       }
       const u = r.t / r.dur;
       const e = Math.sin((u * Math.PI) / 2);
       r.img.setScale(B * r.sc * (0.25 + 0.75 * e), B * r.sc * (0.25 + 0.75 * e) * 0.9);
-      r.img.setAlpha(k * 0.7 * (1 - u));
+      r.img.setAlpha(k * 0.85 * (1 - u));
     }
   }
 

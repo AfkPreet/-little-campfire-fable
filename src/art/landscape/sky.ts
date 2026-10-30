@@ -62,9 +62,13 @@ function paintMoon(ctx: Ctx, w: number, h: number): void {
   const c = w / 2, r = w * 0.3;
   softGlow(ctx, c, c, c, PALETTE.cream, 0.35);
   ctx.save();
-  // crescent: full disc minus an offset disc
+  // crescent: clip to the disc, then fill everything except an offset disc (an evenodd fill of the two circles
+  // would also paint the lune of the second circle that lies outside the first)
   ctx.beginPath();
   ctx.arc(c, c, r, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, h);
   ctx.arc(c + r * 0.55, c - r * 0.25, r * 0.86, 0, Math.PI * 2, true);
   ctx.fillStyle = mix(PALETTE.cream, PALETTE.butter, 0.25);
   ctx.fill('evenodd');

@@ -3,7 +3,7 @@
  * a wrap-around drawer for seamless 1024 px tiles, and a per-channel multiply for baked lighting.
  */
 import { hexToRgb, rgbToHex } from '@/config/palette';
-import type { Ctx } from '@/art/pipeline';
+import { ART_SCALE, type Ctx } from '@/art/pipeline';
 
 /** Tileable band width (logical px). TileSprites repeat it across the world. */
 export const TILE_W = 1024;
@@ -14,18 +14,24 @@ export function seeded(seed: number): () => number {
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-/** Draw `paint` three times shifted by -w, 0, +w with a clip, so shapes crossing an edge wrap seamlessly. */
-export function wrapped(ctx: Ctx, w: number, h: number, paint: () => void): void {
+/**
+ * Paint once onto a scratch canvas (so a painter's RNG runs once), then stamp it at -w, 0, +w under a clip: shapes
+ * that cross an edge reappear on the other side and the tile wraps seamlessly. `paint` draws on the scratch context.
+ */
+export function wrapped(ctx: Ctx, w: number, h: number, paint: (ctx: Ctx) => void): void {
+  const tmp = document.createElement('canvas');
+  tmp.width = Math.max(1, Math.ceil(w * ART_SCALE));
+  tmp.height = Math.max(1, Math.ceil(h * ART_SCALE));
+  const tc = tmp.getContext('2d')!;
+  tc.scale(ART_SCALE, ART_SCALE);
+  tc.lineJoin = 'round';
+  tc.lineCap = 'round';
+  paint(tc);
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, w, h);
   ctx.clip();
-  for (const dx of [-w, 0, w]) {
-    ctx.save();
-    ctx.translate(dx, 0);
-    paint();
-    ctx.restore();
-  }
+  for (const dx of [-w, 0, w]) ctx.drawImage(tmp, dx, 0, w, h);
   ctx.restore();
 }
 

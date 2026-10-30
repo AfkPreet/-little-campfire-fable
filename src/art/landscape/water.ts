@@ -49,7 +49,7 @@ export function paintWaterBase(scene: Phaser.Scene, L: Lighting, key: string = W
 /** Ripple: elongated soft glints, tighter near the top (horizon) and wider lower down; cream and deeper reservoir. */
 function paintRipple(ctx: Ctx, w: number, h: number): void {
   const rnd = seeded(131);
-  wrapped(ctx, w, h, () => {
+  wrapped(ctx, w, h, (ctx) => {
     for (let i = 0; i < 150; i++) {
       const t = Math.pow(rnd(), 0.8); // more rows near the horizon
       const y = t * h;

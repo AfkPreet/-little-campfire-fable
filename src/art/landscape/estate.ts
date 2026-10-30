@@ -125,7 +125,7 @@ function paintEstateTile(ctx: Ctx, w: number, h: number): void {
     [1, mix(BASE, PALETTE.lavender, 0.22)],
   ]);
   ctx.fill();
-  wrapped(ctx, w, h, () => {
+  wrapped(ctx, w, h, (ctx) => {
     coffeeRows(ctx, f, w, rnd);
     // silver oaks: 9 across the tile, planted on the slope line
     const oaks = [40, 150, 265, 380, 470, 600, 720, 830, 950];
