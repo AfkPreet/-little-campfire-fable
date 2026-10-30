@@ -96,9 +96,6 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.58), mid: mix(ridge, k.horizon, 0.26),
-        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.moss, k.top, 0.5), k.horizon, 0.3),
-        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.sage, C.butter, 0.4), k.horizon, 0.3),
-        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(C.sage, k.horizon, 0.32),
         ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.sage, k.horizon, 0.55), ridge, 0.25),
         nearTint: mix(C.cream, C.peach, 0.28), groundTint: mix(C.cream, C.lavender, 0.22), fgTint: mix(C.cream, C.lavender, 0.3),
         charTint: mix(C.cream, C.peach, 0.18), waterTint: mix(C.cream, k.horizon, 0.3),
@@ -110,6 +107,7 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.55), mid: mix(ridge, k.horizon, 0.22),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(C.sage, k.horizon, 0.32),
         nearTint: C.cream, groundTint: C.cream, fgTint: C.cream,
         charTint: C.cream, waterTint: C.cream,
         mistColor: mix(k.horizon, C.cream, 0.5), mist: 0.22, stars: 0, moon: 0, sun: 1, warmth: 0, ambient: 1, vignette: 0.08,
@@ -120,6 +118,7 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.55), mid: mix(ridge, k.horizon, 0.22),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.sage, C.butter, 0.4), k.horizon, 0.3),
         nearTint: mix(C.cream, C.butter, 0.5), groundTint: mix(C.cream, C.butter, 0.4), fgTint: mix(C.cream, C.butter, 0.45),
         charTint: mix(C.cream, C.butter, 0.35), waterTint: mix(C.cream, C.butter, 0.4),
         mistColor: mix(k.horizon, C.cream, 0.3), mist: 0.3, stars: 0, moon: 0, sun: 0.75, warmth: 0.35, ambient: 0.95, vignette: 0.1,
@@ -130,6 +129,7 @@ function keyLight(key: LightKey): KeyLight {
       return {
         skyTop: k.top, skyHorizon: k.horizon,
         far: mix(ridge, k.horizon, 0.5), mid: mix(ridge, k.horizon, 0.18),
+        ridgeMid: mix(mix(ridge, k.horizon, 0.58), mix(ridge, k.horizon, 0.22), 0.5), estate: mix(mix(C.moss, k.top, 0.5), k.horizon, 0.3),
         nearTint: mix(C.cream, k.top, 0.42), groundTint: mix(C.cream, k.top, 0.46), fgTint: mix(C.cream, k.top, 0.5),
         charTint: mix(C.cream, k.top, 0.3), waterTint: mix(C.cream, k.horizon, 0.45),
         mistColor: mix(k.horizon, C.lavender, 0.4), mist: 0.35, stars: 0.4, moon: 0.35, sun: 0.1, warmth: 0.75, ambient: 0.6, vignette: 0.18,
