@@ -73,3 +73,12 @@ Grafted from the Vietnam concept: paper lanterns under the shop awning and the l
 | --- | --- | --- | --- |
 | Agent fan-out | Two or three focused implementers per workflow, verified inline by the integrator | Ten-agent panels at high effort | The first three parallel workflows (11 + 3 + 4 agents) exhausted the account's 5-hour usage limit in twenty minutes and died mid-file. Smaller fan-outs keep the build moving. |
 | Salvage | Keep partial modules from the dead agents and finish them | Rewrite from scratch | `ui/kit.ts`, `fx/particles.ts`, `fx/textures.ts`, `audio/engine.ts` and most of `data/*` were complete and typechecked after small fixes. |
+
+## 5. M0 outcomes
+
+| Area | Chosen | Rejected | Why |
+| --- | --- | --- | --- |
+| Horizon | Far shoreline at y 420 with the estate as a real middle ground (y 290-420); water y 420-600 | The bible's first draft (shoreline at 345, water 345-600) | The tall empty water band flattened the scene and the estate was a strip of squiggles; the lower shoreline gives Kodagu's coffee rows and silver oaks room to read, and the mirrored reflection fills the water. |
+| Ridge tints | `lighting.ts` exposes four white-band colors: far, ridgeMid, mid, estate | Two colors (far, mid) with the estate sharing mid | Three visibly stacked chains plus a greener estate are what make the depth read at every key. |
+| Bands | Image strips per band, not TileSprites | TileSprites | A TileSprite allocates a world-sized canvas and re-uploads it on every tile-position change; strips are static quads. |
+| Review | The integrator re-scores every artist board with stricter kawaii / want-to-play bars and issues one polish round with explicit art direction | Accepting the artists' self-scores | Self-scores were 0.5-1 point generous on the tail, the guardian body and the depth; one directed round fixed each. |
