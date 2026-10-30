@@ -15,6 +15,7 @@ export const SCENES = {
   cooking: 'Cooking',
   journal: 'Journal',
   album: 'Album',
+  daysummary: 'DaySummary',
 } as const;
 
 async function waitForFonts(): Promise<void> {
