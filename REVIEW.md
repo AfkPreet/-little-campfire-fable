@@ -31,3 +31,13 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | board-landscape (6 keys) | 4 | 3 | 4 | 3 | 5 | 4 | - | 3 | Relighting across dawn/day/golden/dusk/night/rain is lovely and consistent. But the far ridges are one faint band, the estate slope is a strip of squiggles, and a tall empty water band flattens the middle; the jamun crown dominates; the laterite earth face is heavy; ferns are dark blobs. Fix: three stacked ridge chains with their own tints (lighting now exposes far/ridgeMid/mid/estate), a real estate middle ground (y 290-420) with readable silver oaks, coffee rows and a homestay, water reduced to y 420-600 with mirrored reflection and bigger snags, jamun crown to 420 px with cloud lobes, lighter lower bank, delicate fern fronds. Re-shoot. |
 | camp-night | 4 | 4 | 4 | 3 | 5 | 4 | - | 4 | Firelight pool, fireflies, moon path and stars all present and warm; the moon-lily pool glow is a nice touch. Same depth issues as above. |
+
+### Round 3 (landscape, integrator review): M0 passes
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| board-landscape (6 keys) | 4 | 4 | 5 | 4 | 5 | 4 | - | 4 | Three ridge chains stack with their own tints; the estate middle ground reads (coffee rows, silver oaks with pepper vines, areca, homestay); water has reflections, lily pads and tall pale snags; the jamun is a soft cloud-lobed tree; bank is light with a grass lip; ferns are delicate. Pass. |
+| camp-day | 4 | 4 | 4 | 4 | 5 | 4 | - | 4 | Full-frame day view keeps the top 40% as sky and ridges. Nit (not blocking): the coffee-bush rows read as a repeating dot pattern in flat daylight; soften in the M4 polish pass. |
+| camp-night, camp-rain, camp-dawn-mist, camp-golden | 4 | 4 | 5 | 4 | 5 | 4 | - | 4 | Firelight pool, fireflies, moon path; rain is cooler with streaks and rings; mist dissolves the ridges top-down; golden rim warmth. Pass. |
+
+**M0 verdict:** every board scores 4 or more on every applicable rubric line. Style board passed; gameplay code may begin (M1).

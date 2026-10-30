@@ -12,14 +12,16 @@ export type SkyPos = {
 };
 
 export const HORIZON_Y = BAND_Y.skyBottom;
-const SUN_LOW_Y = 318;
+const SUN_LOW_Y = 380;
 const SUN_HIGH_Y = 72;
 const MOON_HIGH_Y = 96;
+/** the sun's disc fades as it dips behind the ridge chains, which top out above the shoreline */
+const SUN_SET_Y = 350;
 const DISC_FADE = 44;
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-function aboveHorizon(y: number): number {
-  return clamp01((HORIZON_Y + 12 - y) / DISC_FADE);
+function aboveHorizon(y: number, horizon: number = HORIZON_Y): number {
+  return clamp01((horizon + 12 - y) / DISC_FADE);
 }
 
 /**
@@ -32,7 +34,7 @@ export function sunPosition(dayT: number, viewW: number): SkyPos {
   const uu = Math.min(1.25, u);
   const x = viewW * (0.1 + 0.8 * uu);
   const y = SUN_LOW_Y - (SUN_LOW_Y - SUN_HIGH_Y) * Math.sin(Math.PI * Math.min(1, uu)) + (uu > 1 ? (uu - 1) * 260 : 0);
-  return { x, y, up: aboveHorizon(y) };
+  return { x, y, up: aboveHorizon(y, SUN_SET_Y) };
 }
 
 /** The moon rises on the right from dayT 0.8 and hangs high by full night. */

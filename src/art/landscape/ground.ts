@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import { ACCENTS, PALETTE, alpha, mix, outline, shade } from '@/config/palette';
 import { ellipsePath, linearGradient, paintTexture, roundRectPath, type Ctx } from '@/art/pipeline';
+import { BAND_Y, GROUND_Y } from '@/world/layout';
 import { TILE_W, seeded, wrapped } from './common';
 
 export const GROUND_KEYS = {
@@ -30,51 +31,90 @@ export const GROUND_SIZES = {
 
 const GRASS = PALETTE.sage;
 const GRASS_DEEP = mix(PALETTE.sage, PALETTE.moss, 0.5);
-const EARTH = mix(ACCENTS.laterite, PALETTE.bark, 0.3);
-const EARTH_DEEP = shade(EARTH, -0.22);
+/** The laterite earth face: lightened toward cream so it reads as a warm lip, not a heavy dark band. */
+const EARTH = mix(ACCENTS.laterite, PALETTE.cream, 0.28);
+const EARTH_DEEP = shade(EARTH, -0.16);
+/** Below the earth face the fringe grass covers everything: its base colour fills the rest of the strip. */
+const UNDER = shade(PALETTE.moss, -0.15);
+/** Strip-texture y of the grass crest, the earth face top and bottom (world 600 / 640 / 676 with the tile top at 582). */
+const CREST = GROUND_SIZES.strip.tuft + 4;
+const EARTH_TOP = BAND_Y.earthTop - (GROUND_Y - GROUND_SIZES.strip.tuft - 4);
+const EARTH_BOTTOM = BAND_Y.earthBottom - (GROUND_Y - GROUND_SIZES.strip.tuft - 4);
 
-/** Grass surface: a lumpy top edge with tufts, grading down into the earth face with pebbles and root stripes. */
+const crestY = (x: number): number => CREST + Math.sin(x * 0.11) * 2.5 + Math.sin(x * 0.037 + 1) * 2;
+
+/** The grass body gradient shared by the strip and the bank end (same absolute y stops so the join is seamless). */
+function grassGradient(ctx: Ctx): CanvasGradient {
+  return linearGradient(ctx, 0, CREST, 0, EARTH_TOP, [
+    [0, GRASS],
+    [0.55, mix(GRASS, GRASS_DEEP, 0.6)],
+    [1, GRASS_DEEP],
+  ]);
+}
+function earthGradient(ctx: Ctx): CanvasGradient {
+  return linearGradient(ctx, 0, EARTH_TOP, 0, EARTH_BOTTOM, [
+    [0, EARTH],
+    [0.5, EARTH],
+    [1, EARTH_DEEP],
+  ]);
+}
+
+/** Grass surface: a lumpy top edge with tufts, a deep grass body, a thin lighter laterite face with a grass lip over it. */
 function paintStrip(ctx: Ctx, w: number, h: number): void {
   const rnd = seeded(203);
   const T = GROUND_SIZES.strip.tuft;
-  // earth face
-  ctx.fillStyle = linearGradient(ctx, 0, T, 0, h, [
-    [0, EARTH],
-    [0.35, EARTH],
-    [1, EARTH_DEEP],
-  ]);
-  ctx.fillRect(0, T + 14, w, h - T - 14);
+  // under-fringe fill, then the earth face, then the grass body
+  ctx.fillStyle = UNDER;
+  ctx.fillRect(0, EARTH_BOTTOM - 2, w, h - EARTH_BOTTOM + 2);
+  ctx.fillStyle = earthGradient(ctx);
+  ctx.fillRect(0, EARTH_TOP - 4, w, EARTH_BOTTOM - EARTH_TOP + 4);
   wrapped(ctx, w, h, (ctx) => {
-    // root stripes and pebbles in the earth
-    ctx.strokeStyle = alpha(EARTH_DEEP, 0.55);
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 26; i++) {
-      const x = rnd() * w, y = T + 36 + rnd() * (h - T - 50);
-      const len = 14 + rnd() * 40;
+    // pebbles and a few root hairs in the earth
+    ctx.strokeStyle = alpha(EARTH_DEEP, 0.5);
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < 14; i++) {
+      const x = rnd() * w, y = EARTH_TOP + 10 + rnd() * (EARTH_BOTTOM - EARTH_TOP - 16);
+      const len = 10 + rnd() * 26;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + len / 2, y + (rnd() - 0.5) * 6, x + len, y + (rnd() - 0.5) * 4);
+      ctx.quadraticCurveTo(x + len / 2, y + (rnd() - 0.5) * 5, x + len, y + (rnd() - 0.5) * 3);
       ctx.stroke();
     }
-    for (let i = 0; i < 34; i++) {
-      const x = rnd() * w, y = T + 30 + rnd() * (h - T - 40), r = 1.5 + rnd() * 2.5;
-      ctx.fillStyle = rnd() < 0.5 ? alpha(mix(EARTH, PALETTE.cream, 0.4), 0.6) : alpha(EARTH_DEEP, 0.6);
+    for (let i = 0; i < 30; i++) {
+      const x = rnd() * w, y = EARTH_TOP + 6 + rnd() * (EARTH_BOTTOM - EARTH_TOP - 10), r = 1.2 + rnd() * 2;
+      ctx.fillStyle = rnd() < 0.5 ? alpha(mix(EARTH, PALETTE.cream, 0.5), 0.7) : alpha(EARTH_DEEP, 0.55);
       ellipsePath(ctx, x, y, r * 1.3, r);
       ctx.fill();
     }
-    // grass body: a soft scalloped edge
+    // the earth's soft bottom edge: a few dark-moss tufts rising from the fringe fill
+    for (let x = rnd() * 10; x < w; x += 9 + rnd() * 10) {
+      const hgt = 4 + rnd() * 9;
+      ctx.fillStyle = rnd() < 0.5 ? UNDER : mix(UNDER, PALETTE.moss, 0.4);
+      ctx.beginPath();
+      ctx.moveTo(x - 3, EARTH_BOTTOM + 1);
+      ctx.quadraticCurveTo(x + (rnd() - 0.5) * 3, EARTH_BOTTOM - hgt * 0.6, x + (rnd() - 0.5) * 5, EARTH_BOTTOM - hgt);
+      ctx.quadraticCurveTo(x + 1, EARTH_BOTTOM - hgt * 0.4, x + 3, EARTH_BOTTOM + 1);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // grass body: a soft scalloped crest, and a lip that overhangs the earth face in rounded tongues
     ctx.beginPath();
-    ctx.moveTo(0, T + 30);
-    for (let x = 0; x <= w; x += 16) ctx.lineTo(x, T + 4 + Math.sin(x * 0.11) * 2.5 + Math.sin(x * 0.037 + 1) * 2);
-    ctx.lineTo(w, T + 30);
+    ctx.moveTo(0, crestY(0));
+    for (let x = 0; x <= w; x += 16) ctx.lineTo(x, crestY(x));
+    ctx.lineTo(w, EARTH_TOP);
+    for (let x = w - 18; x >= -18; x -= 18) {
+      const hang = 3 + Math.abs(Math.sin(x * 0.07 + 0.4)) * 7;
+      ctx.quadraticCurveTo(x + 9, EARTH_TOP + hang + 3, x, EARTH_TOP + hang * 0.3);
+    }
+    ctx.lineTo(-18, crestY(0));
     ctx.closePath();
-    ctx.fillStyle = linearGradient(ctx, 0, T, 0, T + 30, [
-      [0, GRASS],
-      [0.6, GRASS_DEEP],
-      [1, mix(GRASS_DEEP, EARTH, 0.6)],
-    ]);
+    ctx.fillStyle = grassGradient(ctx);
     ctx.fill();
-    // tufts over the edge
+    // the lip's soft shadow on the earth
+    ctx.strokeStyle = alpha(shade(EARTH, -0.3), 0.35);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // tufts over the crest
     for (let x = rnd() * 12; x < w; x += 10 + rnd() * 18) {
       const hgt = 5 + rnd() * (T - 4);
       const lean = (rnd() - 0.5) * 8;
@@ -87,20 +127,29 @@ function paintStrip(ctx: Ctx, w: number, h: number): void {
       ctx.fillStyle = c;
       ctx.fill();
     }
-    // small cream daisies and fallen-leaf flecks in the grass
-    for (let i = 0; i < 10; i++) {
-      const x = rnd() * w, y = T + 10 + rnd() * 10;
+    // blade strokes and small cream daisies in the grass body
+    ctx.strokeStyle = alpha(GRASS_DEEP, 0.5);
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 70; i++) {
+      const x = rnd() * w, y = CREST + 8 + rnd() * (EARTH_TOP - CREST - 12);
+      ctx.beginPath();
+      ctx.moveTo(x, y + 4);
+      ctx.quadraticCurveTo(x + 1, y, x + (rnd() - 0.5) * 4, y - 5 - rnd() * 4);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 12; i++) {
+      const x = rnd() * w, y = T + 10 + rnd() * 14;
       ctx.fillStyle = rnd() < 0.5 ? alpha(PALETTE.cream, 0.85) : alpha(PALETTE.butter, 0.8);
       ellipsePath(ctx, x, y, 2, 1.6);
       ctx.fill();
     }
   });
-  // outline along the grass crest and a darker hairline where grass meets earth
+  // outline along the grass crest
   ctx.lineWidth = 2.4;
   ctx.strokeStyle = outline(GRASS, 0.2);
   ctx.beginPath();
   for (let x = 0; x <= w; x += 16) {
-    const y = T + 4 + Math.sin(x * 0.11) * 2.5 + Math.sin(x * 0.037 + 1) * 2;
+    const y = crestY(x);
     if (x === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
@@ -117,9 +166,8 @@ function paintRise(ctx: Ctx, w: number, h: number): void {
   ctx.closePath();
   ctx.fillStyle = linearGradient(ctx, 0, 0, 0, h, [
     [0, GRASS],
-    [0.45, GRASS_DEEP],
-    [0.7, EARTH],
-    [1, EARTH_DEEP],
+    [0.5, mix(GRASS, GRASS_DEEP, 0.6)],
+    [1, GRASS_DEEP],
   ]);
   ctx.fill();
   ctx.lineWidth = 2.4;
@@ -146,7 +194,7 @@ function paintRise(ctx: Ctx, w: number, h: number): void {
   }
 }
 
-/** The bank's rounded end dipping into the water: grass cap over a laterite face curling under. */
+/** The bank's rounded end dipping into the water: grass cap curling under, a sliver of laterite at the waterline. */
 function paintBankEnd(ctx: Ctx, w: number, h: number): void {
   const T = GROUND_SIZES.strip.tuft;
   ctx.beginPath();
@@ -156,24 +204,28 @@ function paintBankEnd(ctx: Ctx, w: number, h: number): void {
   ctx.quadraticCurveTo(w * 0.6, T + 100, w * 0.3, h);
   ctx.lineTo(0, h);
   ctx.closePath();
-  // the same earth and grass gradients as the strip (same absolute y stops) so the join at the shore is seamless
-  ctx.fillStyle = linearGradient(ctx, 0, T + 14, 0, GROUND_SIZES.strip.h, [
-    [0, EARTH],
-    [0.35, EARTH],
-    [1, EARTH_DEEP],
-  ]);
+  ctx.fillStyle = UNDER;
   ctx.fill();
   ctx.save();
   ctx.clip();
-  ctx.fillStyle = linearGradient(ctx, 0, T, 0, T + 30, [
-    [0, GRASS],
-    [0.6, GRASS_DEEP],
-    [1, mix(GRASS_DEEP, EARTH, 0.6)],
-  ]);
-  ctx.fillRect(0, 0, w, T + 30);
+  ctx.fillStyle = earthGradient(ctx);
+  ctx.fillRect(0, EARTH_TOP - 4, w, EARTH_BOTTOM - EARTH_TOP + 4);
+  ctx.fillStyle = grassGradient(ctx);
+  ctx.fillRect(0, 0, w, EARTH_TOP);
+  // the grass lip over the earth, continuing the strip's tongues
+  ctx.beginPath();
+  ctx.moveTo(0, EARTH_TOP - 2);
+  for (let x = 0; x <= w; x += 18) {
+    const hang = 3 + Math.abs(Math.sin(x * 0.07 + 0.4)) * 7;
+    ctx.quadraticCurveTo(x + 9, EARTH_TOP + hang + 3, x + 18, EARTH_TOP + hang * 0.3);
+  }
+  ctx.lineTo(w, EARTH_TOP - 2);
+  ctx.closePath();
+  ctx.fillStyle = GRASS_DEEP;
+  ctx.fill();
   ctx.restore();
   ctx.lineWidth = 2.4;
-  ctx.strokeStyle = outline(EARTH, 0.22);
+  ctx.strokeStyle = outline(GRASS_DEEP, 0.22);
   ctx.beginPath();
   ctx.moveTo(w * 0.7, T + 20);
   ctx.quadraticCurveTo(w * 0.98, T + 40, w * 0.78, T + 70);
@@ -185,8 +237,8 @@ function paintBankEnd(ctx: Ctx, w: number, h: number): void {
   ctx.quadraticCurveTo(w * 0.45, T + 4, w * 0.7, T + 20);
   ctx.stroke();
   // wet laterite near the waterline
-  ctx.fillStyle = alpha(shade(ACCENTS.laterite, -0.25), 0.5);
-  ellipsePath(ctx, w * 0.55, T + 92, 30, 9);
+  ctx.fillStyle = alpha(shade(ACCENTS.laterite, -0.2), 0.4);
+  ellipsePath(ctx, w * 0.6, EARTH_BOTTOM - 4, 26, 7);
   ctx.fill();
 }
 

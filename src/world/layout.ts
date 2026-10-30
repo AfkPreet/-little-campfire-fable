@@ -20,14 +20,18 @@ export const BAND_SCROLL = {
 
 /** Vertical extents of the bands (world y). */
 export const BAND_Y = {
-  skyBottom: 345,
+  skyBottom: 420,
   ridgeTop: 170,
-  estateTop: 240,
-  shoreline: 345,
+  ridgeBottom: 320,
+  estateTop: 290,
+  shoreline: 420,
   waterBottom: 720,
-  shallowsTop: 480,
+  shallowsTop: 400,
   shallowsBottom: 580,
   ground: GROUND_Y,
+  /** the laterite earth face shows between these; below it the fringe grass covers everything */
+  earthTop: 640,
+  earthBottom: 676,
   fringeTop: 640,
 } as const;
 
@@ -51,7 +55,7 @@ export const LAYOUT = {
   fire: { x: 1180, y: 588 },
   cushion: { x: 1110, y: GROUND_Y },
   bookshelf: { x: 1260, y: GROUND_Y },
-  jamunTree: { x: 1250, y: GROUND_Y, crownTopY: 150 },
+  jamunTree: { x: 1250, y: GROUND_Y, crownTopY: 190 },
   hammock: { x: 1425, y: GROUND_Y - 70 },
   jackfruitTree: { x: 1600, y: GROUND_Y, crownTopY: 230 },
   /** Where the bank slopes down to the water. */
@@ -105,42 +109,45 @@ export function groundTopAt(x: number): number {
 }
 
 /**
- * Scenery placement for the Landscape bands (ART_BIBLE section 3). Tile tops are the y of each painted band's top edge;
- * the ridge crests then fall at 147-218 / 220-275 / 271-312 and the estate crest at 295-320, all above the shoreline.
+ * Scenery placement for the Landscape bands (ART_BIBLE section 3). The three ridge chains share one texture height
+ * whose bottom edge sits on the far shoreline (y 420); each chain's crest is placed inside it (ridges.ts).
  */
 export const SCENERY = {
-  ridgeTops: [100, 135, 150] as const,
-  estateTop: 290,
-  /** mist band centers: between ridges 2-3, at the estate base, and the weather mist that swallows the slope */
-  mistY: { far: 268, estate: 340, weather: 290 },
+  /** parallax factors of the three ridge chains, far -> near */
+  ridgeScroll: [0.08, 0.1, 0.13] as const,
+  /** all three ridge strips hang from this y; their textures reach down to the shoreline */
+  ridgeTop: BAND_Y.ridgeTop,
+  estateTop: BAND_Y.estateTop,
+  /** mist band centers: between ridges 2-3, along the far shore, and the weather mist that swallows the slope */
+  mistY: { far: 262, estate: 412, weather: 345 },
   /** shallows band (scroll 0.5): snags stand with their base at this y; local x along the band */
-  snagBaseY: 566,
+  snagBaseY: 548,
   snags: [
-    { x: 300, variant: 0, bird: false },
-    { x: 760, variant: 1, bird: false },
-    { x: 1240, variant: 2, bird: true },
-    { x: 1700, variant: 0, bird: false },
-    { x: 2200, variant: 1, bird: false },
+    { x: 260, variant: 0, bird: false },
+    { x: 700, variant: 1, bird: false },
+    { x: 1140, variant: 2, bird: true },
+    { x: 1560, variant: 3, bird: false },
+    { x: 1990, variant: 1, bird: false },
+    { x: 2420, variant: 0, bird: false },
   ] as const,
-  reeds: [520, 1480, 2050] as const,
-  /** lily pads along the near shore (world x, water y, size 0..1) */
+  reeds: [480, 1380, 2210] as const,
+  /** lily pad clusters along the near shore (world x, water y, size 0..1) */
   lilyPads: [
-    { x: 640, y: 574, s: 0.9 },
-    { x: 1030, y: 579, s: 1 },
-    { x: 1690, y: 571, s: 0.85 },
-    { x: 2210, y: 581, s: 1 },
-    { x: 2320, y: 568, s: 0.8 },
-    { x: 2470, y: 584, s: 1 },
+    { x: 600, y: 566, s: 0.85 }, { x: 640, y: 574, s: 1 }, { x: 684, y: 562, s: 0.8 }, { x: 668, y: 580, s: 0.9 },
+    { x: 1020, y: 572, s: 1 }, { x: 1062, y: 564, s: 0.85 }, { x: 1050, y: 582, s: 0.9 },
+    { x: 2230, y: 570, s: 1 }, { x: 2272, y: 562, s: 0.8 }, { x: 2300, y: 578, s: 0.95 }, { x: 2350, y: 566, s: 0.85 },
   ] as const,
+  /** the far coracle (scroll 0.25) drifting along the far shore by day: water y and px/s */
+  farCoracle: { y: 436, speed: 3, x0: 700 },
   /** fringe (scroll 1.3): clumps every `step` px with jitter, feet between the two y values */
-  fringe: { step: 118, jitter: 36, y0: 698, y1: 730 },
+  fringe: { step: 96, jitter: 30, y0: 690, y1: 724 },
   /** sky furniture (sky-band local y) */
   cloudY: [66, 118, 92] as const,
   egretY: [128, 158] as const,
   starsH: 230,
   /** where fireflies gather at night: the jamun crown and the bamboo culms (world rects) */
   fireflyBounds: [
-    { x: 1080, y: 200, w: 340, h: 320 },
+    { x: 1060, y: 200, w: 380, h: 230 },
     { x: 200, y: 160, w: 220, h: 340 },
   ] as const,
 } as const;

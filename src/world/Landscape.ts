@@ -22,11 +22,11 @@ import { fireflies, rain, starsTwinkle, type FirefliesHandle, type RainHandle, t
 import { FX_KEYS, paintFxTextures } from '@/fx/textures';
 import { TILE_W, colorDistance } from '@/art/landscape/common';
 import { SKY_KEYS, SKY_SIZES, paintSkyGradient, paintSkyTextures } from '@/art/landscape/sky';
-import { RIDGE_H, RIDGE_KEYS, paintRidges } from '@/art/landscape/ridges';
+import { RIDGE_KEYS, paintRidges } from '@/art/landscape/ridges';
 import { ESTATE_KEY, ESTATE_REFLECT_KEY, ESTATE_WINDOWS, paintEstate, paintEstateReflection } from '@/art/landscape/estate';
 import { MIST_H, MIST_KEY, MIST_W, paintMistBand } from '@/art/landscape/mist';
 import { WATER_KEYS, WATER_SIZES, paintWaterBase, paintWaterTextures } from '@/art/landscape/water';
-import { SHALLOWS_KEYS, SHALLOWS_SIZES, paintShallows } from '@/art/landscape/shallows';
+import { SHALLOWS_KEYS, SHALLOWS_SIZES, SNAG_TOPS, paintShallows } from '@/art/landscape/shallows';
 import { GROUND_KEYS, GROUND_SIZES, paintGround } from '@/art/landscape/ground';
 import { FRINGE_KEYS, FRINGE_SIZES, paintFringe } from '@/art/landscape/fringe';
 import { makeFire, type FireRig } from '@/art/props/fire';
@@ -82,10 +82,15 @@ export type LandscapeOpts = {
 
 export type LandscapeLayers = {
   sky: Container;
+  /** the three ridge chains, each at its own parallax factor (SCENERY.ridgeScroll) */
   far: Container;
+  farMid: Container;
   mistFar: Container;
+  farNear: Container;
   estate: Container;
   water: Container;
+  /** things on the far water that move with the estate (the drifting coracle) */
+  farWater: Container;
   mistNear: Container;
   shallows: Container;
   clearing: Container;
@@ -123,9 +128,11 @@ const RIPPLE_W = WATER_SIZES.ripple.w;
 const MIST_SPEED = [5, -3.5, 2.5];
 const CLOUD_SPEED = 6;
 const EGRET_SPEED = 22;
-const REFLECT_ALPHA = 0.28;
+const REFLECT_ALPHA = 0.3;
 const VIGNETTE_MIN = 0.1;
-const REFLECT_SQUASH = 0.5;
+const REFLECT_SQUASH = 0.6;
+/** fringe clusters fade out over this many px as they pass the bank's end onto open water */
+const FRINGE_SHORE_FADE = 70;
 
 let instances = 0;
 
@@ -183,7 +190,8 @@ export class Landscape {
   private waterBase!: Image;
   private waterOpen!: Image;
   private rippleOpen!: Strip;
-  private reflections: Array<{ t: Strip; band: Band; which: 'far' | 'r3' | 'mid' }> = [];
+  private reflections: Array<{ t: Strip; band: Band; which: 'r3' | 'estate' }> = [];
+  private farCoracle!: Image;
   private ripple!: Strip;
   private path!: Image;
   private lilies: Image[] = [];
@@ -233,10 +241,13 @@ export class Landscape {
       return k;
     };
     const sky = band(BAND_SCROLL.sky);
-    const far = band(BAND_SCROLL.ridges);
-    const mistFar = band(BAND_SCROLL.ridges + 0.05);
+    const far = band(SCENERY.ridgeScroll[0]);
+    const farMid = band(SCENERY.ridgeScroll[1]);
+    const mistFar = band(SCENERY.ridgeScroll[1] + 0.015);
+    const farNear = band(SCENERY.ridgeScroll[2]);
     const estate = band(BAND_SCROLL.estate);
     const water = band(BAND_SCROLL.water);
+    const farWater = band(BAND_SCROLL.estate);
     const mistNear = band(BAND_SCROLL.estate + 0.1);
     const shallows = band(BAND_SCROLL.shallows);
     const clearing = band(BAND_SCROLL.clearing);
@@ -245,7 +256,7 @@ export class Landscape {
     const light = band(BAND_SCROLL.clearing);
     const fringe = band(BAND_SCROLL.fringe);
     const overlay = band(0);
-    this.layers = { sky, far, mistFar, estate, water, mistNear, shallows, clearing, ground, clearingBack, actors, clearingFront, light, fringe, overlay };
+    this.layers = { sky, far, farMid, mistFar, farNear, estate, water, farWater, mistNear, shallows, clearing, ground, clearingBack, actors, clearingFront, light, fringe, overlay };
 
     this.buildSky(opts.starCount ?? 60);
     this.buildFar();
@@ -266,7 +277,7 @@ export class Landscape {
     paintSkyTextures(s);
     paintRidges(s);
     paintEstate(s);
-    paintEstateReflection(s, WATER_TOP - SCENERY.estateTop);
+    paintEstateReflection(s);
     paintMistBand(s);
     paintWaterTextures(s);
     paintShallows(s);
@@ -307,10 +318,10 @@ export class Landscape {
   }
 
   private buildFar(): void {
-    const { far, estate, mistFar, mistNear } = this.layers;
+    const { far, farMid, farNear, estate, mistFar, mistNear } = this.layers;
     const w = this.worldWidth + TILE_W;
-    this.ridges = RIDGE_KEYS.map((k, i) => this.strip(0, SCENERY.ridgeTops[i], w, k, TILE_W));
-    far.add(this.ridges);
+    this.ridges = RIDGE_KEYS.map((k) => this.strip(0, SCENERY.ridgeTop, w, k, TILE_W));
+    [far, farMid, farNear].forEach((c, i) => c.add(this.ridges[i]));
     this.estateTile = this.strip(0, SCENERY.estateTop, w, ESTATE_KEY, TILE_W);
     estate.add(this.estateTile);
     // homestay windows: a soft glow per tile repeat, lit at night
@@ -333,7 +344,7 @@ export class Landscape {
   }
 
   private buildWater(): void {
-    const { water } = this.layers;
+    const { water, farWater } = this.layers;
     const s = this.scene;
     const w = this.worldWidth + TILE_W;
     this.waterBase = s.make.image({ x: 0, y: WATER_TOP, key: this.waterKey, add: false }).setOrigin(0, 0);
@@ -343,19 +354,21 @@ export class Landscape {
     this.waterOpen = s.make.image({ x: LAYOUT.shore.x - 40, y: WATER_TOP, key: this.waterKey, add: false }).setOrigin(0, 0);
     this.waterOpen.setDisplaySize(w - LAYOUT.shore.x + 40, WATER_H);
     water.add([this.waterBase, this.waterOpen]);
-    // mirrored, squashed far bands at low alpha
-    const refl = (key: string, band: Band, which: 'far' | 'r3' | 'mid', squash = REFLECT_SQUASH, flip = true) => {
-      const t = this.strip(0, WATER_TOP, w, key, TILE_W, { flipY: flip, squash });
-      t.setAlpha(REFLECT_ALPHA);
+    // mirrored far bands (the nearest ridge chain and the estate), squashed to 60% at low alpha; both textures
+    // have their bottom row on the shoreline so the flipped copies hang straight down from it
+    const refl = (key: string, band: Band, which: 'r3' | 'estate', flip: boolean) => {
+      const t = this.strip(0, WATER_TOP, w, key, TILE_W, { flipY: flip, squash: REFLECT_SQUASH });
+      t.setAlpha(which === 'estate' ? REFLECT_ALPHA * 0.75 : REFLECT_ALPHA);
       this.reflections.push({ t, band, which });
       water.add(t);
     };
-    const farBand = this.bands.find((b) => b.c === this.layers.far)!;
+    const nearRidgeBand = this.bands.find((b) => b.c === this.layers.farNear)!;
     const estBand = this.bands.find((b) => b.c === this.layers.estate)!;
-    // the ridge texture's own skirt (below the crest) sits under the shoreline; mirror the crest region only
-    refl(RIDGE_KEYS[0], farBand, 'far', (WATER_TOP - SCENERY.ridgeTops[0]) / RIDGE_H * 0.55);
-    refl(RIDGE_KEYS[2], farBand, 'r3', (WATER_TOP - SCENERY.ridgeTops[2]) / RIDGE_H * 0.5);
-    refl(ESTATE_REFLECT_KEY, estBand, 'mid', REFLECT_SQUASH, false);
+    refl(RIDGE_KEYS[2], nearRidgeBand, 'r3', true);
+    refl(ESTATE_REFLECT_KEY, estBand, 'estate', false);
+    // the far coracle drifting along the far shore (visible by day)
+    this.farCoracle = this.mk(SCENERY.farCoracle.x0, SCENERY.farCoracle.y, SHALLOWS_KEYS.farCoracle).setOrigin(0.5, 1).setAlpha(0);
+    farWater.add(this.farCoracle);
     // ripples only where water shows: above the bank across the world, and down to the frame bottom past the shore
     this.ripple = this.strip(-RIPPLE_W, WATER_TOP, w + RIPPLE_W, WATER_KEYS.ripple, RIPPLE_W);
     this.ripple.setAlpha(0.55);
@@ -380,13 +393,16 @@ export class Landscape {
 
   private buildShallows(): void {
     const { shallows } = this.layers;
+    const S = SHALLOWS_SIZES.snag;
     for (const sp of SCENERY.snags) {
-      const im = this.mk(sp.x, SCENERY.snagBaseY, SHALLOWS_KEYS.snags[sp.variant]).setOrigin(0.5, 1);
+      // the waterline is at texture y S.base; the reflection hangs below it
+      const im = this.mk(sp.x, SCENERY.snagBaseY, SHALLOWS_KEYS.snags[sp.variant]).setOrigin(0.5, S.base / S.h);
       this.shallowImgs.push(im);
       shallows.add(im);
       if (sp.bird) {
-        // perch on the trunk top: variant 2's top is at texture y 56 (snag-c), leaning +10
-        this.cormorant = this.mk(sp.x + 11, SCENERY.snagBaseY - (SHALLOWS_SIZES.snag.h - 56) - 3, SHALLOWS_KEYS.cormorant).setOrigin(0.5, 1);
+        // perch on the trunk top
+        const [tx, ty] = SNAG_TOPS[sp.variant];
+        this.cormorant = this.mk(sp.x + (tx - S.w / 2), SCENERY.snagBaseY - (S.base - ty) - 2, SHALLOWS_KEYS.cormorant).setOrigin(0.5, 1);
         this.shallowImgs.push(this.cormorant);
         shallows.add(this.cormorant);
       }
@@ -537,13 +553,14 @@ export class Landscape {
     }
     // far bands: white-painted, tinted
     // ridge 1 is the lightest (most air in front of it); each nearer chain steps toward `mid`
-    const farTints = [mix(L.far, L.skyHorizon, 0.3), L.far, mix(L.far, L.mid, 0.55)];
+    const farTints = [L.far, L.ridgeMid, L.mid];
     this.ridges.forEach((r, i) => r.setTint(hexToInt(farTints[i])));
-    this.estateTile.setTint(hexToInt(L.mid));
+    this.estateTile.setTint(hexToInt(L.estate));
     for (const r of this.reflections) {
-      const c = r.which === 'far' ? farTints[0] : r.which === 'r3' ? farTints[2] : L.mid;
-      r.t.setTint(hexToInt(mix(c, L.skyHorizon, 0.25)));
+      const c = r.which === 'r3' ? L.mid : L.estate;
+      r.t.setTint(hexToInt(mix(c, L.skyHorizon, 0.2)));
     }
+    this.farCoracle.setTint(hexToInt(L.nearTint)).setAlpha(clamp01((L.sun - 0.3) / 0.4) * (1 - L.rain));
     const mistTint = hexToInt(L.mistColor);
     this.mists.forEach((m) => m.setTint(mistTint));
     this.mists[0].setAlpha(L.mist * 0.75);
@@ -640,9 +657,19 @@ export class Landscape {
       e.x = cloudDrift(t * 0.5 + i * 7, i * 260 + 40, this.viewW, SKY_SIZES.egret.w, EGRET_SPEED);
       e.y = SCENERY.egretY[i] + 3 * Math.sin(t * 1.7 + i);
     });
-    // fringe sway
+    // the far coracle drifts along the far shore and wraps around the world
+    const cw = this.worldWidth + 200;
+    this.farCoracle.x = ((SCENERY.farCoracle.x0 + t * SCENERY.farCoracle.speed) % cw + cw) % cw - 100;
+    this.farCoracle.y = SCENERY.farCoracle.y + Math.sin(t * 1.1) * 1.2;
+    // fringe sway; clusters fade out where the bank ends and open water begins
     const still = isReduceMotion() ? 0.25 : 1;
-    for (const s of this.sways) s.img.rotation = still * s.a * Math.sin(t * s.w + s.p);
+    const shoreScreen = LAYOUT.shore.x + this.bandX(BAND_SCROLL.clearing) - scrollX;
+    const fringeX = this.bandX(BAND_SCROLL.fringe) - scrollX;
+    for (const s of this.sways) {
+      s.img.rotation = still * s.a * Math.sin(t * s.w + s.p);
+      const k = clamp01((shoreScreen - (s.img.x + fringeX)) / FRINGE_SHORE_FADE);
+      if (s.img.alpha !== k) s.img.setAlpha(k);
+    }
     // fire
     this.fire.update(t);
     // fireflies fade toward the lighting's target count

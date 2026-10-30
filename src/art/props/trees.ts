@@ -6,7 +6,7 @@
 import Phaser from 'phaser';
 import { ACCENTS, PALETTE, alpha, mix, outline, shade } from '@/config/palette';
 import { blobPath, contactShadow, ellipsePath, makeImg, paintTexture, type Ctx } from '@/art/pipeline';
-import { seeded } from '@/art/landscape/common';
+import { seeded, softFill } from '@/art/landscape/common';
 
 export const TREE_KEYS = {
   bamboo: 'bamboo-clump',
@@ -17,7 +17,8 @@ export const TREE_KEYS = {
 } as const;
 export const TREE_SIZES = {
   bamboo: { w: 340, h: 500, baseX: 80 },
-  jamun: { w: 400, h: 470, baseX: 200 },
+  /** crown 420 wide; texture y 2 is world y 190 (LAYOUT.jamunTree.crownTopY) with the base at world 600 */
+  jamun: { w: 440, h: 416, baseX: 220 },
   jackfruit: { w: 240, h: 400, baseX: 120 },
 } as const;
 
@@ -185,59 +186,132 @@ function trunk(ctx: Ctx, x: number, baseY: number, topY: number, wBase: number, 
   ctx.fill();
 }
 
+type Lobe = { cx: number; cy: number; rx: number; ry: number };
+/** The jamun crown's five cloud lobes (texture px): three behind, two lower ones in front. */
+const JAMUN_LOBES: Lobe[] = [
+  { cx: 95, cy: 140, rx: 92, ry: 72 },
+  { cx: 342, cy: 136, rx: 95, ry: 74 },
+  { cx: 215, cy: 92, rx: 106, ry: 90 },
+  { cx: 168, cy: 172, rx: 86, ry: 58 },
+  { cx: 276, cy: 170, rx: 88, ry: 56 },
+];
+
+/** One soft cloud lobe: a rounded blob with its outline, a lighter soft highlight on its upper-left, a few scallops. */
+function cloudLobe(ctx: Ctx, l: Lobe, rnd: () => number, base: string): void {
+  const light = mix(base, PALETTE.sage, 0.7);
+  const pts: Array<[number, number]> = [];
+  const n = 12;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const k = 0.9 + rnd() * 0.1;
+    pts.push([l.cx + Math.cos(a) * l.rx * k, l.cy + Math.sin(a) * l.ry * k]);
+  }
+  blobPath(ctx, pts);
+  ctx.fillStyle = base;
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = outline(base, 0.3);
+  ctx.stroke();
+  // a slightly deeper underside, soft
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = alpha(shade(base, -0.16), 0.6);
+  ellipsePath(ctx, l.cx + l.rx * 0.15, l.cy + l.ry * 0.75, l.rx * 0.95, l.ry * 0.5);
+  softFill(ctx, alpha(shade(base, -0.16), 0.6), 14);
+  // the soft lighter highlight on the upper-left: a brushed patch, not a gloss
+  ellipsePath(ctx, l.cx - l.rx * 0.3, l.cy - l.ry * 0.35, l.rx * 0.5, l.ry * 0.4, -0.35);
+  softFill(ctx, alpha(light, 0.55), 16);
+  // leafy scallops: small arcs of the mid tone over the body so the lobe reads as foliage
+  ctx.strokeStyle = alpha(outline(base, 0.22), 0.45);
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 14; i++) {
+    const a = rnd() * Math.PI * 2, d = 0.25 + rnd() * 0.6;
+    const sx = l.cx + Math.cos(a) * l.rx * d, sy = l.cy + Math.sin(a) * l.ry * d;
+    const r = 5 + rnd() * 5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, Math.PI * 1.1, Math.PI * 1.9);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = alpha(mix(light, PALETTE.cream, 0.2), 0.5);
+  for (let i = 0; i < 6; i++) {
+    const sx = l.cx - l.rx * (0.1 + rnd() * 0.5), sy = l.cy - l.ry * (0.15 + rnd() * 0.5);
+    const r = 4 + rnd() * 4;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, Math.PI * 1.1, Math.PI * 1.9);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function paintJamun(ctx: Ctx, w: number, h: number): void {
   const rnd = seeded(1250);
   const S = TREE_SIZES.jamun;
   const bx = S.baseX, by = h - 4;
   contactShadow(ctx, bx, by, 80, 10, PALETTE.ink, 0.18);
   const bark = mix(PALETTE.bark, ACCENTS.jamun, 0.2);
-  trunk(ctx, bx, by, 190, 30, 24, bark);
-  // lowest branch: hang points at (-70, 180 above ground) and (+80, 160 above ground)
+  // thick trunk, reaching up into the lower lobes
+  trunk(ctx, bx, by, 200, 40, 30, bark);
+  // lowest branches: hang points at (-70, 180 above ground) and (+80, 160 above ground)
   ctx.lineCap = 'round';
-  for (const [dx, dy, len] of [[-70, 180, 1], [80, 160, 1]] as const) {
-    ctx.lineWidth = 11;
+  for (const [dx, dy] of [[-70, 180], [80, 160]] as const) {
+    ctx.lineWidth = 13;
     ctx.strokeStyle = outline(bark, 0.28);
     ctx.beginPath();
     ctx.moveTo(bx, by - 150);
-    ctx.quadraticCurveTo(bx + dx * 0.5, by - dy - 8, bx + dx * 1.35 * len, by - dy + 12);
+    ctx.quadraticCurveTo(bx + dx * 0.5, by - dy - 8, bx + dx * 1.35, by - dy + 12);
     ctx.stroke();
-    ctx.lineWidth = 7;
+    ctx.lineWidth = 8;
     ctx.strokeStyle = bark;
     ctx.stroke();
-  }
-  crown(ctx, bx, 180, 180, 150, rnd, 26);
-  // berries dangling at the crown's underside
-  for (let i = 0; i < 18; i++) {
-    const x = bx - 120 + rnd() * 240, y = 290 + rnd() * 40 - Math.abs(x - bx) * 0.12;
-    ctx.fillStyle = ACCENTS.jamun;
-    ellipsePath(ctx, x, y, 3, 3.6);
-    ctx.fill();
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = outline(ACCENTS.jamun, 0.25);
+    // a twig off the branch end
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = outline(bark, 0.2);
+    ctx.beginPath();
+    ctx.moveTo(bx + dx * 1.1, by - dy + 6);
+    ctx.lineTo(bx + dx * 1.2, by - dy - 12);
     ctx.stroke();
-    ctx.fillStyle = alpha(PALETTE.cream, 0.55);
-    ellipsePath(ctx, x - 1, y - 1.2, 0.9, 0.8);
-    ctx.fill();
+  }
+  // the crown: three back lobes, then the two lower lobes in front
+  const base = PALETTE.moss;
+  for (const l of JAMUN_LOBES) cloudLobe(ctx, l, rnd, base);
+  // berries hanging along the underside of the lower lobes only
+  for (const l of JAMUN_LOBES.slice(3)) {
+    for (let i = 0; i < 9; i++) {
+      const a = Math.PI * (0.2 + rnd() * 0.6);
+      const r = 0.82 + rnd() * 0.18;
+      const x = l.cx + Math.cos(a) * l.rx * r, y = l.cy + Math.sin(a) * l.ry * r + 2;
+      ctx.fillStyle = ACCENTS.jamun;
+      ellipsePath(ctx, x, y, 3.2, 3.8);
+      ctx.fill();
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = outline(ACCENTS.jamun, 0.25);
+      ctx.stroke();
+      ctx.fillStyle = alpha(PALETTE.cream, 0.55);
+      ellipsePath(ctx, x - 1, y - 1.3, 1, 0.9);
+      ctx.fill();
+    }
   }
 }
 
 function paintJamunRim(ctx: Ctx, w: number, h: number): void {
-  const bx = TREE_SIZES.jamun.baseX;
   ctx.strokeStyle = RIM;
-  ctx.lineWidth = 6;
   ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.arc(bx, 180, 150, -Math.PI * 0.42, Math.PI * 0.1);
-  ctx.stroke();
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(bx, 180, 128, -Math.PI * 0.3, Math.PI * 0.05);
-  ctx.stroke();
+  for (const l of [JAMUN_LOBES[2], JAMUN_LOBES[1]]) {
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.ellipse(l.cx, l.cy, l.rx * 0.95, l.ry * 0.95, 0, -Math.PI * 0.42, Math.PI * 0.08);
+    ctx.stroke();
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(l.cx, l.cy, l.rx * 0.8, l.ry * 0.8, 0, -Math.PI * 0.3, Math.PI * 0.04);
+    ctx.stroke();
+  }
 }
 
+/** A jackfruit: a plump oval in marigold-sage with a faint stipple and a soft sheen, hanging from a short stalk. */
 function jackfruit(ctx: Ctx, x: number, y: number, rx: number, ry: number, rnd: () => number): void {
-  const fill = mix(PALETTE.sage, ACCENTS.marigold, 0.5);
-  // stalk
+  const fill = mix(ACCENTS.marigold, PALETTE.sage, 0.35);
   ctx.strokeStyle = outline(PALETTE.bark, 0.1);
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -250,15 +324,22 @@ function jackfruit(ctx: Ctx, x: number, y: number, rx: number, ry: number, rnd: 
   ctx.lineWidth = 2.5;
   ctx.strokeStyle = outline(fill, 0.28);
   ctx.stroke();
-  // bumpy skin
-  ctx.fillStyle = alpha(outline(fill, 0.3), 0.55);
-  for (let i = 0; i < 26; i++) {
-    const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 0.8;
-    ellipsePath(ctx, x + Math.cos(a) * rx * d, y + Math.sin(a) * ry * d, 1.3, 1.3);
+  ctx.save();
+  ctx.clip();
+  // faint stipple
+  ctx.fillStyle = alpha(outline(fill, 0.3), 0.22);
+  for (let i = 0; i < 40; i++) {
+    const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 0.92;
+    ellipsePath(ctx, x + Math.cos(a) * rx * d, y + Math.sin(a) * ry * d, 0.8, 0.8);
     ctx.fill();
   }
-  ctx.fillStyle = alpha(PALETTE.cream, 0.3);
-  ellipsePath(ctx, x - rx * 0.35, y - ry * 0.3, rx * 0.25, ry * 0.3, -0.4);
+  // a soft shadow side and a sheen
+  ctx.fillStyle = alpha(outline(fill, 0.25), 0.3);
+  ellipsePath(ctx, x + rx * 0.45, y + ry * 0.2, rx * 0.5, ry * 0.75, 0.1);
+  ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = alpha(PALETTE.cream, 0.38);
+  ellipsePath(ctx, x - rx * 0.35, y - ry * 0.35, rx * 0.26, ry * 0.3, -0.4);
   ctx.fill();
 }
 
@@ -270,9 +351,9 @@ function paintJackfruit(ctx: Ctx, w: number, h: number): void {
   trunk(ctx, bx, by, 110, 26, 20, PALETTE.bark, true);
   crown(ctx, bx, 96, 105, 78, rnd, 16, mix(PALETTE.moss, PALETTE.sage, 0.25));
   crown(ctx, bx + 40, 60, 60, 44, rnd, 8, mix(PALETTE.moss, PALETTE.sage, 0.35));
-  jackfruit(ctx, bx - 20, by - 115, 15, 24, rnd);
-  jackfruit(ctx, bx + 18, by - 90, 17, 27, rnd);
-  jackfruit(ctx, bx - 4, by - 55, 13, 20, rnd);
+  jackfruit(ctx, bx - 20, by - 112, 16, 25, rnd);
+  jackfruit(ctx, bx + 18, by - 86, 18, 28, rnd);
+  jackfruit(ctx, bx - 6, by - 52, 14, 21, rnd);
 }
 
 export function paintTrees(scene: Phaser.Scene): void {
