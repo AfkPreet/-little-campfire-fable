@@ -24,3 +24,10 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | board-hero | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Tail is now a fluffy comma with irregular fur bumps and the "?" curl reads; stripes run along the back; face is clean. Pass. Minor: crown dashes show as faint forehead arcs at 100 px (acceptable). |
 | board-npcs (Bangari) | 4 | 4 | 4 | - | 5 | 4 | 5 | 4 | Hump, roof-tile scallops, forked lavender tail, dorsal fin, sleepy lidded eye and blush: a gentle fish spirit. Pass. Minor: pectoral petal faint against the glow belly; barbels hang in front of the belly (fine when risen at the dock). |
+
+### Round 2 (landscape, integrator review)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| board-landscape (6 keys) | 4 | 3 | 4 | 3 | 5 | 4 | - | 3 | Relighting across dawn/day/golden/dusk/night/rain is lovely and consistent. But the far ridges are one faint band, the estate slope is a strip of squiggles, and a tall empty water band flattens the middle; the jamun crown dominates; the laterite earth face is heavy; ferns are dark blobs. Fix: three stacked ridge chains with their own tints (lighting now exposes far/ridgeMid/mid/estate), a real estate middle ground (y 290-420) with readable silver oaks, coffee rows and a homestay, water reduced to y 420-600 with mirrored reflection and bigger snags, jamun crown to 420 px with cloud lobes, lighter lower bank, delicate fern fronds. Re-shoot. |
+| camp-night | 4 | 4 | 4 | 3 | 5 | 4 | - | 4 | Firelight pool, fireflies, moon path and stars all present and warm; the moon-lily pool glow is a nice touch. Same depth issues as above. |
