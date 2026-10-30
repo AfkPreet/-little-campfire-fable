@@ -98,11 +98,18 @@ export const STRINGS = {
     backToShopping: 'Back to shopping',
     headOutAnyway: 'Head out anyway',
     exit: 'Head to camp',
-    /** Shopkeeper small talk on entering; the integrator fills the world-specific lines. */
+    /** Doddamma's small talk on entering (ART_BIBLE section 5). */
     greetings: [
-      'Come in, come in. Mind the step.',
-      'Back again? The kettle just went quiet.',
-      'Take your time. Nothing here is in a hurry.',
+      'Come in, come in, putta. The mist will lift by the time your kaapi cools.',
+      'First trip? Tent, rod, something to cook in. The rest is just nice to have.',
+      'Rain tonight, if my knees are right. Mushrooms come up double after rain.',
+      "Jamun stains purple. Pick them before lunch and wash your paws, that's all I'll say.",
+      'The murrels wake at dusk. Cast when the water turns pink.',
+      'Estate honey. Good in kaapi, better in payasa, best straight off the spoon.',
+      "Fireflies like the jamun tree. Sit still by the fire and they'll come to you.",
+      "A cane rod bends but doesn't break. Like a good auntie.",
+      'Cooked food fetches more than raw. Even a plain meen fry is a kind of magic.',
+      'Sleep when you like, putta. Manjukere keeps its own time.',
     ] as string[],
   },
 
@@ -110,7 +117,7 @@ export const STRINGS = {
   legend: [
     'Oh my. Where did you find this scale?',
     'Old campers say a gentle guardian lives in the {Water}. It rises on rainy nights, for someone truly content.',
-    'And they say it loves Moonlight Dumplings. Here, take my old recipe card.',
+    'And they say she loves Moonlight Kadubu. Here, take my old recipe card.',
   ] as string[],
 
   camp: {
