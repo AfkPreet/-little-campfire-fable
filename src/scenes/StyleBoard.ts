@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import { SCENES } from '@/scenes/Boot';
+import { DEBUG } from '@/config/debug';
+
+const BOARDS = import.meta.glob<{ default: (scene: Phaser.Scene) => void | Promise<void> }>('../art/boards/*.ts');
 import { applyViewport } from '@/config/layout';
 import { PALETTE, LIGHT_KEYS, hexToInt } from '@/config/palette';
 import { paintTexture, img, blobPath, fillOutlined, kawaiiEye, blushOval, contactShadow } from '@/art/pipeline';
@@ -16,6 +19,18 @@ export class StyleBoardScene extends Phaser.Scene {
   create(): void {
     const v = applyViewport(this);
     this.cameras.main.setBackgroundColor(hexToInt(PALETTE.cream));
+    this.game.events.on('viewport', () => applyViewport(this));
+
+    // Board pages are modules in src/art/boards/<name>.ts exporting `default(scene)`; ?board=<name> loads one.
+    const board = (DEBUG.board ?? '').toLowerCase();
+    const loader = BOARDS[`../art/boards/${board}.ts`];
+    if (loader) {
+      void loader().then((m) => {
+        const r = m.default(this);
+        void Promise.resolve(r).then(() => this.time.delayedCall(500, () => { window.__game.ready = true; }));
+      });
+      return;
+    }
 
     // Palette swatches
     const tokens = Object.entries(PALETTE);
@@ -57,7 +72,6 @@ export class StyleBoardScene extends Phaser.Scene {
 
     this.add.text(40, 20, `Style board · ${Math.round(v.w)}x${v.h} logical · zoom ${v.zoom.toFixed(2)}`, { fontFamily: 'Baloo 2', fontSize: '18px', color: PALETTE.ink }).setResolution(2);
 
-    this.game.events.on('viewport', () => applyViewport(this));
     this.time.delayedCall(100, () => { window.__game.ready = true; });
   }
 }

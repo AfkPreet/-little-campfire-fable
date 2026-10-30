@@ -20,8 +20,14 @@ export const PALETTE = {
   glow: '#FFD59A', // firelight, lanterns, fireflies
 } as const;
 
-/** Setting accents (added at M0 after the world lock; see ART_BIBLE.md). Filled in by the world lock step. */
-export const ACCENTS = {} as Record<string, string>;
+/** Setting accents (locked at M0, ART_BIBLE.md section 2). All at or under 40% HSB saturation. */
+export const ACCENTS = {
+  laterite: '#C99886', // red-earth path, fire-ring stones, coracle rim, clay pot (33%)
+  reservoir: '#8FB5B0', // teal-green water by day, lily pads, the kettle (21%)
+  marigold: '#DFBE8F', // Doddamma's shawl, garlands, jackfruit flesh, Honey Whisker (36%)
+  jamun: '#9A7F9F', // jamun berries and stains, Firefly Catfish, dusk shadow (20%)
+} as const;
+export type AccentToken = keyof typeof ACCENTS;
 
 export type PaletteToken = keyof typeof PALETTE;
 
