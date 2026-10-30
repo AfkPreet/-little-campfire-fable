@@ -40,6 +40,13 @@ const SHOTS = {
     { name: 'cooking', q: 'scene=cooking&state=midtrip', settle: 900 },
     { name: 'day-summary', q: 'scene=daysummary&state=midtrip', settle: 2600 },
   ],
+  m2: [
+    { name: 'journal-fish', q: 'scene=journal&state=midtrip&tab=fish', settle: 900 },
+    { name: 'journal-recipes', q: 'scene=journal&state=midtrip&tab=recipes', settle: 900 },
+    { name: 'journal-mystery', q: 'scene=journal&state=midtrip&tab=mystery', settle: 900 },
+    { name: 'moment-rainbow', q: 'scene=camp&state=midtrip&time=dawn&moment=rainbow', settle: 5000 },
+    { name: 'moment-shooting-star', q: 'scene=camp&state=midtrip&time=night&moment=shooting_star', settle: 5000 },
+  ],
 };
 
 const list = (SHOTS[milestone] ?? SHOTS.m0).filter((s) => !only || s.name.includes(only));

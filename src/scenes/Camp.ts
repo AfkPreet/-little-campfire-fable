@@ -24,6 +24,9 @@ import { RestFlow } from '@/systems/restFlow';
 import { installCampApi, type CampApi } from '@/systems/campApi';
 import { installFishing } from '@/systems/fishing';
 import { installForaging } from '@/systems/foraging';
+import { installWeather } from '@/systems/weatherFlow';
+import { installTiers } from '@/systems/tiers';
+import { installMoments } from '@/systems/moments';
 
 /** Camera and input tuning for the Camp scene. */
 export const CAMP = {
@@ -117,6 +120,9 @@ export class CampScene extends Phaser.Scene implements CampContext {
 
     installFishing(this);
     installForaging(this);
+    installWeather(this);
+    installTiers(this);
+    installMoments(this);
     this.api = installCampApi(this);
     this.time.delayedCall(CAMP.readyDelayMs, () => {
       window.__game.ready = true;

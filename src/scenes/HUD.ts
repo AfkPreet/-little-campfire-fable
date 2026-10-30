@@ -7,6 +7,7 @@
  */
 import Phaser from 'phaser';
 import { SCENES } from '@/scenes/Boot';
+import { JOURNAL_EVENTS } from '@/scenes/Journal';
 import { applyViewport, viewport, type Viewport } from '@/config/layout';
 import { PALETTE, shade } from '@/config/palette';
 import { makeImg } from '@/art/pipeline';
@@ -30,6 +31,7 @@ const HUD = {
   bounceMs: 220,
   readyMs: 300,
   backpack: { w: 440, h: 520, rowH: 56, iconSize: 40, nameSize: 18 },
+  journalPause: 'journal',
 } as const;
 
 type Row = { key: string; name: string; count: string };
@@ -125,7 +127,7 @@ export class HUDScene extends Phaser.Scene {
       this.toast(tierLabel(tierOf(getState())));
     });
     // bottom-right: backpack + journal
-    const journal = new Button(this, right - UI.iconButton / 2, bottom - UI.iconButton / 2, STRINGS.hud.journal, () => this.toast(STRINGS.hudExtras.journalSoon), { kind: 'icon', icon: TEX.journal });
+    const journal = new Button(this, right - UI.iconButton / 2, bottom - UI.iconButton / 2, STRINGS.hud.journal, () => this.openJournal(), { kind: 'icon', icon: TEX.journal });
     const backpack = new Button(this, right - UI.iconButton * 1.5 - UI.gap, bottom - UI.iconButton / 2, STRINGS.hud.backpack, () => this.openBackpack(), { kind: 'icon', icon: TEX.backpack });
     this.root.add([this.coin, this.moneyText, this.sun, this.moon, this.dayText, this.lantern, journal, backpack]);
   }
@@ -151,6 +153,25 @@ export class HUDScene extends Phaser.Scene {
       this.lastTier = tier;
       this.lantern.setTier(tier, tag !== 'init' && tag !== 'viewport' && !isReduceMotion());
     }
+  }
+
+  // ---------- journal ----------
+  /** Open the Journal overlay over Camp: pause the clock and Camp/HUD taps until 'journal:closed'. */
+  private openJournal(): void {
+    if (this.scene.isActive(SCENES.journal)) return;
+    const camp = this.scene.get(SCENES.camp) as (Phaser.Scene & { pauseClock?: (r: string) => void; resumeClock?: (r: string) => void }) | null;
+    const active = !!camp && camp.scene.isActive();
+    if (active) {
+      camp.pauseClock?.(HUD.journalPause);
+      camp.input.enabled = false;
+      this.input.enabled = false;
+      camp.events.once(JOURNAL_EVENTS.closed, () => {
+        camp.resumeClock?.(HUD.journalPause);
+        camp.input.enabled = true;
+        this.input.enabled = true;
+      });
+    }
+    this.scene.launch(SCENES.journal, {});
   }
 
   // ---------- backpack ----------

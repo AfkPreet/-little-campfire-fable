@@ -32,6 +32,8 @@ export class ClockRunner {
   private lastKind: WeatherKind | null = null;
   /** The player lit the fire (cooking) before dusk; it stays lit for the day. */
   fireLitByPlayer = false;
+  /** Mist level the weather flow is cross-fading (burn-off, misty sunrise); null = read from the state. */
+  mistOverride: number | null = null;
   lighting!: Lighting;
 
   constructor(private readonly camp: CampScene) {
@@ -58,7 +60,14 @@ export class ClockRunner {
 
   private weatherFor(): { rain: number; mist: number } {
     const w = getState().weather;
-    return { rain: w.raining ? 1 : 0, mist: w.kind === 'mist' && !w.mistBurnedOff ? 1 : 0 };
+    const mist = this.mistOverride ?? (w.kind === 'mist' && !w.mistBurnedOff ? 1 : 0);
+    return { rain: w.raining ? 1 : 0, mist };
+  }
+
+  /** Push the current weather (state + mist override) to the landscape and ambience now. */
+  applyWeatherNow(): void {
+    this.camp.landscape.setWeather(this.weatherFor());
+    this.pushAmbience();
   }
 
   get fireLit(): boolean {
@@ -97,6 +106,8 @@ export class ClockRunner {
     const s = getState();
     const paused = this.camp.clockPaused;
     const r = tick(s, dt, paused);
+    // the mist burned off this tick: hold it at full so the weather flow can cross-fade it out
+    if (r.mistBurnedOff && this.mistOverride === null) this.mistOverride = 1;
     const w = this.weatherFor();
     this.lighting = lightingAt(s.dayT, w);
     const land = this.camp.landscape;

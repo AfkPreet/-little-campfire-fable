@@ -258,11 +258,43 @@ export const STRINGS = {
     empty: 'Nothing to sell yet. Fish, forage and dishes will show up here.',
   },
   /** HUD extras (M1): the Journal placeholder and the Backpack overlay. */
+  /** Weather flow toasts (mid-day rain change). */
+  weatherFlow: {
+    rainStarting: 'The rain is starting...',
+    rainLettingUp: 'The rain is letting up',
+  },
+
   hudExtras: {
     journalSoon: 'Journal: coming soon',
     backpackEmpty: 'Nothing in here yet.',
     count: 'x{Count}',
     fishSize: '{Fish} · {Size} cm',
+  },
+  /** Journal extras (M2): labels inside the notebook pages. */
+  journalExtras: {
+    tapToOpen: 'Tap to open',
+    pageOf: '{i} / {n}',
+    when: 'When: {When}',
+    rod: 'Rod: {Rod}',
+    best: 'Best {cm} cm',
+    caught: 'Caught x{n}',
+    cookware: '{Cookware}',
+    cooked: 'Cooked x{n}',
+    seen: 'Seen x{n}',
+    friendLocked: 'Something is out there... share a dish at dusk.',
+    friendVisits: 'Visits: {n} / {total}',
+    friendFound: 'A small friend from the thicket.',
+    clue: 'Clue {n}',
+    tripDay: 'Day {n}',
+    tripFish: 'Fish caught: {n}',
+    tripBest: 'Best catch: {Fish} ({cm} cm)',
+    tripMostCooked: 'Most cooked: {Dish}',
+    tripMoments: 'Moments: {List}',
+    tripNoMoments: 'Moments: a quiet day',
+    tripEmpty: 'Nothing yet. Go be cozy.',
+    close: 'Close',
+    prev: 'Previous page',
+    next: 'Next page',
   },
 } as const;
 
