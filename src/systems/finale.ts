@@ -29,15 +29,17 @@ export const FINALE = {
   plate: { x: LAYOUT.jetty.x1 - 6, y: LAYOUT.jetty.deckY - 2 },
   guardian: {
     /** her centre sits this far beyond the jetty end (world x); she faces the jetty */
-    dx: 320,
+    dx: 290,
     waterY: SCENERY.snagBaseY,
     /** her rig sits this much above the water line so the mouth and eye clear the water (the belly is masked at the line) */
     lift: 48,
-    scale: 0.64,
+    scale: 0.5,
     glowMs: 2500,
     riseMs: 8000,
     sinkMs: 6000,
   },
+  /** cinematic framing: the camera leaves the hero and pans toward the guardian so her whole body is in view */
+  camera: { panDx: 260, ms: 2600 },
   rain: { softTo: 0.25, softenMs: 6000, clearMs: 3000 },
   beats: { placeMs: 1000, afterRiseMs: 1200, afterNuzzleMs: 400, afterEatMs: 1600, afterMoonbowMs: 2500, afterSinkMs: 600 },
   moonbow: { fadeInMs: 8000, holdMs: 12000, fadeOutMs: 6000 },
@@ -88,6 +90,12 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   camp.hooks.onInterrupt?.();
   camp.pauseClock(F.pauseReason);
   setHudChrome(camp, false);
+
+  // cinematic framing: stop following the hero and pan toward the guardian's spot
+  const cam = camp.worldCam;
+  cam.stopFollow();
+  if (rm || instant) cam.centerOn(F.heroX + F.camera.panDx, cam.midPoint.y);
+  else cam.pan(F.heroX + F.camera.panDx, cam.midPoint.y, F.camera.ms, 'Sine.easeInOut');
 
   // skip button (replays only): fixed to the view, top-right
   let skipBtn: Button | null = null;
@@ -196,6 +204,12 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   swirl.then(() => undefined, () => undefined);
   void arcGone;
   setHudChrome(camp, true);
+  const refollow = (): void => {
+    const lerp = isReduceMotion() ? 1 : 0.08;
+    cam.startFollow(camp.hero, true, lerp, lerp);
+  };
+  if (rm) { cam.centerOn(camp.hero.x, cam.midPoint.y); refollow(); }
+  else cam.pan(camp.hero.x, cam.midPoint.y, F.camera.ms, 'Sine.easeInOut', false, (_c, progress) => { if (progress >= 1) refollow(); });
   camp.resumeClock(F.pauseReason);
   camp.events.emit('finale:done', { skipped, first });
   running.delete(camp);

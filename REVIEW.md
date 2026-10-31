@@ -77,3 +77,16 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | companion-peek | 5 | 5 | 5 | 4 | 3 | 4 | 5 | 5 | Puttu's ears and huge eyes above the jamun thicket at dusk with the "Something is peeking..." toast: charming. Fail on line 5: a green-and-black checker strip on the tent is Phaser's missing-texture pattern, from the half-finished decor mode (Mango-Leaf Toran placed before its texture existed). Carried to the decor-finish round. |
+
+### Round 3 (decor, mystery, album; integrator review)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| decorated-camp-night | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Paper lantern glowing by the dome, mango-leaf toran on the tent, menu button under the day label. The missing-texture strip is gone. Pass. |
+| decor-mode | 4 | 4 | 5 | - | 5 | 5 | 5 | 4 | Toast, tray (hibiscus, chime) and Done read; snap rings show only while dragging. Pass. |
+| legend (shop) | 5 | 4 | 5 | - | 5 | 5 | 5 | 4 | "Oh my. Where did you find this scale?" with Tap to continue; cowrie icons in the shop now. Pass. |
+| album-postcard | 4 | 4 | 5 | - | 4 | 5 | 5 | 4 | Scrapbook grid page, washi tape, the Mallige Falls postcard and the two trip buttons. Nit: the dotted stamp outline on the postcard reads as a placeholder; soften in M4. |
+| finale-rise / finale-moonbow (round 1) | 4 | 3 | 5 | 4 | 5 | 4 | 5 | 4 | At 0.64 scale Bangari filled the right half like a yellow wall with her tail off-screen. Fix: scale 0.5, and the finale camera leaves the hero and pans toward her so the whole body and tail are in frame; the phone frame already reads beautifully (fairy lights, fire, moonbow, whole guardian). Re-shoot. |
+| finale-moonbow (round 2) | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Whole guardian with her lavender tail at the jetty, fireflies swirling, the moonbow over the ridges, Chikki blissful with the glowing kadubu plate. Pass. |
+
+**M2/M3 verdict:** journal, weather, moments, tiers, companion, decor, mystery, finale, album, free play and settings are in; every shot scores 4 or more except the postcard's "placeholder" line, carried to M4 polish.
