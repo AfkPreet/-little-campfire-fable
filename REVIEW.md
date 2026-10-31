@@ -71,3 +71,9 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | journal-fish | 5 | 4 | 5 | - | 5 | 5 | 5 | 4 | Notebook with paper tabs, rose stamps, "???" silhouettes with hints, rarity stars: the spine of the game reads. Fix: the page counter sat under the previous-page button (moved left). |
 | moment-rainbow | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Soft six-band arc over the ridges with the handwritten banner at dawn. Fix: "over the Manjukere" became "over Manjukere" (proper noun; the same article dropped from the legend and album lines). |
+
+### Round 2 (phase 2, integrator review)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes and fixes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| companion-peek | 5 | 5 | 5 | 4 | 3 | 4 | 5 | 5 | Puttu's ears and huge eyes above the jamun thicket at dusk with the "Something is peeking..." toast: charming. Fail on line 5: a green-and-black checker strip on the tent is Phaser's missing-texture pattern, from the half-finished decor mode (Mango-Leaf Toran placed before its texture existed). Carried to the decor-finish round. |
