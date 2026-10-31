@@ -208,7 +208,7 @@ export function installCampApi(camp: CampScene): CampApi {
     newTrip: async () => {
       const opened = await albumPress(camp, STRINGS.album.newTrip, null);
       if (!opened) return false;
-      await wait(camp, CAMP_API.albumFlipMs);
+      await sleepMs(CAMP_API.albumFlipMs);
       return albumPress(camp, STRINGS.settings.startOver, SCENES.intro);
     },
   };
@@ -223,6 +223,8 @@ export function installCampApi(camp: CampScene): CampApi {
 function wait(scene: Phaser.Scene, ms: number): Promise<void> {
   return new Promise((r) => scene.time.delayedCall(ms, r));
 }
+
+const sleepMs = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Every Button under a scene's display list (containers included). */
 function buttonsOf(scene: Phaser.Scene): Button[] {
@@ -251,7 +253,8 @@ async function albumPress(camp: CampScene, label: string, until: string | null):
     if (target) {
       press(target);
       if (!until) return true;
-      for (let k = 0; k < 40 && window.__game.scene !== until; k++) await wait(album, 100);
+      // wall-clock waits: the album scene stops once the pressed button starts another scene
+      for (let k = 0; k < 60 && window.__game.scene !== until; k++) await sleepMs(100);
       return window.__game.scene === until;
     }
     const next = btns.find((b) => b.label === STRINGS.albumExtras.next);
