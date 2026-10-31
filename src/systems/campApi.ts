@@ -29,6 +29,8 @@ export const CAMP_API = {
   summaryWaitMaxMs: 8000,
   /** scripts cast from the jetty end toward this water point */
   castTarget: { x: LAYOUT.jetty.x1 + 160, y: 560 },
+  /** where scripts stand to cast (the jetty end) */
+  castStandX: LAYOUT.jetty.x1 - 34,
   /** Album page flips the api waits between "next" presses, and how many pages it will turn to find the postcard */
   albumFlipMs: 350,
   albumMaxFlips: 16,
@@ -167,6 +169,9 @@ export function installCampApi(camp: CampScene): CampApi {
       const flow = fishingOf(camp);
       if (!flow) return Promise.resolve();
       const t = CAMP_API.castTarget;
+      // scripts run under headless Chromium where game time crawls: skip the walk to the jetty
+      camp.hooks.onInterrupt?.();
+      camp.hero.setPosition(CAMP_API.castStandX, camp.groundAt(CAMP_API.castStandX));
       return flow.onWaterTap(t.x, t.y, { force: opts.force, auto: true });
     },
     cook: (cookwareId, ingredientIds) => cookDirect(cookwareId, ingredientIds),
