@@ -90,3 +90,21 @@ Artists' own self-review rounds (from their reports): hero R1 4/4/4/3/5/4/4/3 â†
 | finale-moonbow (round 2) | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Whole guardian with her lavender tail at the jetty, fireflies swirling, the moonbow over the ridges, Chikki blissful with the glowing kadubu plate. Pass. |
 
 **M2/M3 verdict:** journal, weather, moments, tiers, companion, decor, mystery, finale, album, free play and settings are in; every shot scores 4 or more except the postcard's "placeholder" line, carried to M4 polish.
+
+## M4: polish and ship (final shot list, `npm run shots m4`)
+
+| Shot | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| title | 5 | 4 | 5 | 4 | 5 | 4 | 4 | 4 | Dusk camp, fireflies, glowing logo, curled-up Chikki; tent-spot markers hidden. |
+| intro | 4 | 4 | 5 | - | 5 | 5 | 5 | 4 | Three storybook cards with painted vignettes. |
+| shop | 4 | 4 | 5 | - | 5 | 5 | 5 | 4 | Cowrie icons, dome icon, leaf tags on essentials. |
+| camp-dawn / day / golden / dusk / night / rain | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 4 | All six keys read; fireflies at dusk and night; rain cooler with streaks and rings. Nit kept for later: the laterite gatepost reads pale under the shop lantern glow at dusk. |
+| fishing-bite | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Chikki on the jetty with the rod, the "!" and bobber, bait pill, cormorant on a snag, far coracle. (`?bite=1` now fires on a wall-clock timer.) |
+| catch-card | 5 | 5 | 5 | - | 5 | 5 | 5 | 5 | Pebble Danio, size, stars, Keep / Let go over the dimmed camp. |
+| cooking-result | 4 | 4 | 5 | - | 5 | 4 | 5 | 4 | NEW RECIPE ribbon, dish icon with sparkles, Eat / Save; the toast briefly overlaps the cookware row. |
+| decorated-camp-night | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Lantern glow by the dome, toran, fairy lights. |
+| journal-fish | 5 | 4 | 5 | - | 5 | 5 | 5 | 4 | Counter no longer hidden. |
+| mystery-finale | 5 | 4 | 5 | 4 | 5 | 4 | 5 | 5 | Whole guardian at the jetty, fireflies, moonbow. |
+| album-postcard | 4 | 4 | 5 | - | 5 | 5 | 5 | 4 | Stamp placeholder replaced. |
+
+**M4 verdict:** every final screenshot scores 4 or more on all applicable rubric lines at iPad and phone sizes. `npm run smoke` (Day 1 + reload) and `npm run trip` (Days 1-7, album, free play on Day 8, new trip keeping the journal) pass with no console errors. Not done: the Vercel deploy (no credentials in this environment; see HANDOFF.md).
