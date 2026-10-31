@@ -98,7 +98,7 @@ try {
 
   // Back to the album (as the Journal's Trip tab does), then "Start a new trip"
   await step('reopen album', async () => {
-    await api(`window.__game.game.scene.start('Album')`);
+    await api(`(window.__game.game.scene.start('Album'), true)`);
     await waitScene('Album');
     await page.waitForTimeout(600);
   });
