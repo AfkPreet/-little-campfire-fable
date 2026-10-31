@@ -83,6 +83,9 @@ export class AlbumScene extends Phaser.Scene {
     this.book.setData('baseScale', 1);
 
     this.closeBtn = new Button(this, 0, 0, '', () => this.close(), { kind: 'icon', icon: TEX.close }).setDepth(L.depth.ui);
+    // scene instances are reused by Phaser: reset per-visit state so a reopened album starts on the cover
+    this.page = 0;
+    this.pageRoot = null;
     this.buildCover(s);
     this.buildBook();
     this.layout(v);

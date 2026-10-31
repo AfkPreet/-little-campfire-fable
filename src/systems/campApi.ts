@@ -250,8 +250,10 @@ async function albumPress(camp: CampScene, label: string, until: string | null):
   const album = camp.scene.get(SCENES.album);
   if (!album || !album.scene.isActive()) return false;
   const press = (b: Button): void => { b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN); b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_UP); };
+  // a confirm modal may be attached to another active scene (HUD/Camp when the album was reopened mid-session)
+  const allButtons = (): Button[] => album.scene.manager.getScenes(true).flatMap((sc) => buttonsOf(sc));
   for (let i = 0; i <= CAMP_API.albumMaxFlips; i++) {
-    const btns = buttonsOf(album);
+    const btns = allButtons();
     const target = btns.find((b) => b.label === label);
     if (target) {
       press(target);
