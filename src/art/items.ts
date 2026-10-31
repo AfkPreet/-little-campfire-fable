@@ -130,9 +130,10 @@ function pot(ctx: Ctx): void {
 }
 function skillet(ctx: Ctx): void {
   shadow(ctx);
-  const iron = mix(P.ink, P.bark, 0.5);
-  oval(ctx, 24, 32, 18, 14, iron);
-  oval(ctx, 24, 31, 12, 8, shade(iron, 0.15), 1.5);
+  const iron = mix(P.ink, P.bark, 0.6);
+  oval(ctx, 24, 32, 18, 14, mix(P.bark, P.cream, 0.15)); // bark rim
+  oval(ctx, 24, 32, 15, 11, iron, 1.5);
+  oval(ctx, 24, 31, 10, 6.5, shade(iron, 0.15), 1.5);
   line(ctx, 40, 26, 52, 16, P.bark, 5);
 }
 function steamer(ctx: Ctx): void {

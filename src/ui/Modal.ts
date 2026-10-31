@@ -51,6 +51,20 @@ export type OverlayHandle = {
 };
 
 /** Backdrop + card. Returns a handle whose close() animates out and destroys everything. */
+/** Open overlays, oldest first (Esc closes the newest; see systems/keyboard.ts). */
+const openHandles: OverlayHandle[] = [];
+
+/** Close the most recently opened overlay or modal. Returns false when none is open. */
+export function closeTopOverlay(): boolean {
+  while (openHandles.length) {
+    const h = openHandles[openHandles.length - 1];
+    if (h.closed) { openHandles.pop(); continue; }
+    h.close();
+    return true;
+  }
+  return false;
+}
+
 export function overlay(scene: Phaser.Scene, opts: OverlayOpts): OverlayHandle {
   const what = opts.what ?? 'modal';
   const place = (v: Viewport) => opts.at?.(v) ?? { x: v.w / 2, y: v.h / 2 };
@@ -82,9 +96,14 @@ export function overlay(scene: Phaser.Scene, opts: OverlayOpts): OverlayHandle {
     scene.game.events.off('viewport', onViewport);
     scene.events.off(Phaser.Scenes.Events.SHUTDOWN, onShutdown);
   };
+  const forget = () => {
+    const k = openHandles.indexOf(handle);
+    if (k >= 0) openHandles.splice(k, 1);
+  };
   const onShutdown = () => {
     closed = true;
     detach();
+    forget();
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, onShutdown);
 
@@ -92,6 +111,7 @@ export function overlay(scene: Phaser.Scene, opts: OverlayOpts): OverlayHandle {
     if (closed) return;
     closed = true;
     detach();
+    forget();
     backdrop.disableInteractive();
     emitUi('ui:close', { what });
     const done = () => {
@@ -108,13 +128,15 @@ export function overlay(scene: Phaser.Scene, opts: OverlayOpts): OverlayHandle {
     scene.tweens.add({ targets: card, scaleX: 0.2, scaleY: 0.2, alpha: 0, duration: MODAL.closeMs, ease: 'Sine.easeIn', onComplete: done });
   };
 
-  return {
+  const handle: OverlayHandle = {
     card,
     close,
     get closed() {
       return closed;
     },
   };
+  openHandles.push(handle);
+  return handle;
 }
 
 export type ModalButton = { label: string; kind?: ButtonKind; onPick?: () => void };

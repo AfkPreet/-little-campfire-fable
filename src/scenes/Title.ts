@@ -85,7 +85,7 @@ export class TitleScene extends Phaser.Scene {
 
   // ---------- world ----------
   private buildWorld(v: Viewport): void {
-    this.landscape = new Landscape(this, { parallax: false, lit: true, viewWidth: v.w });
+    this.landscape = new Landscape(this, { parallax: false, lit: true, viewWidth: v.w, tentSpots: false });
     this.landscape.root.setDepth(TITLE.depth.scenery);
     this.landscape.setLighting(lightingAt(this.dayT));
     this.landscape.setWeather({ rain: 0, mist: 0 });

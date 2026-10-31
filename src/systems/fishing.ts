@@ -55,10 +55,13 @@ export const FISHING_FLOW = {
   releaseMs: 1100,
   /** scripts: cap the wait so smoke runs stay quick */
   autoWaitMs: 700,
+  /** debug ?bite=1: the held "!" lives this many bangHoldMs */
+  debugHoldFactor: 50,
 } as const;
 
 type Phase = 'idle' | 'walking' | 'casting' | 'waiting' | 'bite' | 'reeling' | 'card';
-export type CastOpts = { force?: FishId; auto?: boolean };
+/** `hold` (debug shots): stay in BITE with the "!" up; no hook timer, no miss. */
+export type CastOpts = { force?: FishId; auto?: boolean; hold?: boolean };
 
 const flows = new WeakMap<Phaser.Scene, FishingFlow>();
 export function fishingOf(camp: CampScene): FishingFlow | undefined { return flows.get(camp); }
@@ -119,6 +122,45 @@ export class FishingFlow {
       this.done = resolve;
       this.cast(x, y, rod, opts);
     });
+  }
+
+  /**
+   * Debug (?bite=1 / api.forceBite()): skip the walk and the wait. The hero stands at the jetty with the rod out,
+   * the bobber is already on the water and the bite lands now; with `hold` (default) it stays there for a screenshot.
+   */
+  forceBite(fishId: FishId = 'minnow', hold = true): boolean {
+    const rod = this.ownedRod();
+    if (!rod) return false;
+    if (this.phase !== 'idle') this.cancel(false);
+    const camp = this.camp, hero = camp.hero;
+    const castX = FISHING_FLOW.jettyCastX;
+    hero.setPosition(castX, camp.groundAt(castX));
+    hero.setFacing(1);
+    camp.worldCam.centerOn(castX, camp.worldCam.midPoint.y);
+    this.takeRod();
+    this.showPill();
+    const land = { x: castX + (FISHING_FLOW.minReach + FISHING_FLOW.maxReach) / 3, y: FISHING_FLOW.landY.min + 30 };
+    const bobber = this.bobber ?? makeBobber(camp);
+    this.bobber = bobber;
+    const line = this.line ?? camp.make.graphics({ x: 0, y: 0 }, false);
+    this.line = line;
+    camp.landscape.layers.actors.add([line, bobber]);
+    bobber.setAlpha(1).setVisible(true).setPosition(land.x, land.y);
+    this.redrawLine(land);
+    this.phase = 'waiting';
+    this.bite(land, rod, null, { force: fishId, hold });
+    return true;
+  }
+
+  /** Debug (?catch=1 / api.showCatchCard()): open the catch card for a species as if it had just been reeled in. */
+  forceCard(fishId: FishId = 'minnow'): boolean {
+    const rod = this.ownedRod();
+    if (!rod) return false;
+    if (this.phase !== 'idle') this.cancel(false);
+    const camp = this.camp;
+    camp.input.enabled = false;
+    this.card(fishId, { x: camp.hero.x + 120, y: FISHING_FLOW.landY.min + 30 }, rod, {});
+    return true;
   }
 
   /** Taps on the ground / interactables: reel in whatever is out and put the rod away. */
@@ -224,7 +266,7 @@ export class FishingFlow {
         onUpdate: () => this.redrawLine(b),
       }));
     }
-    this.bang();
+    this.bang(opts.hold === true);
 
     const windowMs = biteWindowMs(rod);
     const hook = () => {
@@ -234,6 +276,12 @@ export class FishingFlow {
       camp.input.enabled = false;
       this.hit(land, fishId, rod, opts);
     };
+    if (opts.hold) {
+      // debug shot: the bite waits for a tap and never slips away
+      this.hookHandler = hook;
+      camp.input.once('pointerdown', hook);
+      return;
+    }
     if (opts.auto || fishId === null) {
       // scripts hook at once; nothing in season still nibbles, then slips away
       this.timers.push(camp.time.delayedCall(fishId === null ? windowMs : 120, () => (fishId === null ? this.miss(land) : hook())));
@@ -393,13 +441,14 @@ export class FishingFlow {
     this.camp.tweens.add({ targets: r, scaleX: b * 1.4 * k, scaleY: b * 1.4 * k, alpha: 0, duration: FISHING_FLOW.ringMs, ease: 'Sine.easeOut', onComplete: () => r.destroy() });
   }
 
-  /** "!" in the hand font over the hero's head. */
-  private bang(): void {
+  /** "!" in the hand font over the hero's head (`hold` keeps it up: debug shots). */
+  private bang(hold = false): void {
     const camp = this.camp;
     const p = camp.hero.worldPoint(RIG.crown, this.tmp);
     const t = makeText(camp, p.x, p.y - 26, '!', { hand: true, size: FISHING_FLOW.bangSize, color: PALETTE.ember, weight: 700, shadow: true }).setOrigin(0.5, 1).setAlpha(0);
     camp.landscape.layers.clearingFront.add(t);
     popIn(camp, t, 240);
+    if (hold) { camp.time.delayedCall(FISHING_FLOW.bangHoldMs * FISHING_FLOW.debugHoldFactor, () => t.destroy()); return; }
     camp.time.delayedCall(FISHING_FLOW.bangHoldMs, () => {
       camp.tweens.add({ targets: t, alpha: 0, y: t.y - 10, duration: 200, onComplete: () => t.destroy() });
     });

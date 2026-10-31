@@ -63,6 +63,11 @@ export function enterDecorMode(initial?: DecorId): void {
   current?.enter(initial);
 }
 /** Sit point of a placed item, for fireFlow. */
+/** True while decor mode is open (keyboard walking and interacting pause). */
+export function isDecorModeActive(): boolean {
+  return current?.active ?? false;
+}
+
 export function decorSitPoint(id: DecorId): XY | null {
   return current?.sitPoint(id) ?? null;
 }

@@ -134,7 +134,14 @@ function paintSkillet(ctx: Ctx, w: number, h: number): void {
   ctx.quadraticCurveTo(cx + 84, cy + 36, cx + 92, cy - 14);
   ctx.closePath();
   fillOutlined(ctx, IRON, 3, 0.3);
-  rim(ctx, cx, cy - 14, 92, 24, mix(IRON, PALETTE.cream, 0.08));
+  // bark rim (a wooden lip) lifts the heavy ink of the iron
+  rim(ctx, cx, cy - 14, 92, 24, mix(PALETTE.bark, PALETTE.cream, 0.12));
+  ellipsePath(ctx, cx, cy - 14, 80, 18);
+  ctx.fillStyle = mix(IRON, PALETTE.cream, 0.08);
+  ctx.fill();
+  ellipsePath(ctx, cx, cy - 14, 80 * 0.84, 18 * 0.7);
+  ctx.fillStyle = shade(IRON, -0.2);
+  ctx.fill();
   // seasoning sheen
   ellipsePath(ctx, cx, cy - 12, 60, 12);
   ctx.fillStyle = alpha(PALETTE.ember, 0.12);

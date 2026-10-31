@@ -3,7 +3,7 @@
  * the UI->audio glue and (in dev) the data validation report. Then the ?scene= target or the Title.
  */
 import Phaser from 'phaser';
-import { DEBUG } from '@/config/debug';
+import { DEBUG, trackScenes } from '@/config/debug';
 import { PALETTE, hexToInt } from '@/config/palette';
 import { applyViewport, viewport } from '@/config/layout';
 import { paintHeroTextures } from '@/art/hero';
@@ -56,7 +56,7 @@ async function waitForFonts(): Promise<void> {
 export function applySettings(): void {
   const s = getState().settings;
   audio.engine.setVolumes({ music: s.music, sfx: s.sounds, ambience: s.ambience });
-  setReduceMotion(s.reduceMotion);
+  setReduceMotion(s.reduceMotion || DEBUG.reduceMotion);
   setTextScale(s.largeText ? LARGE_TEXT_SCALE : 1);
 }
 export const LARGE_TEXT_SCALE = 1.2;
@@ -82,6 +82,7 @@ export class BootScene extends Phaser.Scene {
         booted = true;
         const debug = DEBUG.state && (DEBUG_STATES as readonly string[]).includes(DEBUG.state) ? (DEBUG.state as DebugStateKind) : undefined;
         initStore({ debug, seed: DEBUG.seed, day: DEBUG.day });
+        trackScenes(this.game);
         installAutosave(window);
         if (!DEBUG.noAudio) audio.unlockOnFirstGesture(window);
         installAudioGlue();

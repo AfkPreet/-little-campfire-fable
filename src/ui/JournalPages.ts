@@ -35,6 +35,9 @@ export const PAGE = {
   bodySize: 17,
   smallSize: 16,
   hintSize: 17,
+  /** mystery cards shrink to their text; never shorter than this, with this much paper under the body for the stamp */
+  mysteryMinH: 220,
+  mysteryFoot: 64,
   iconScale: 1.1,
   silhouetteAlpha: 0.3,
   lockedColor: mix(PALETTE.ink, PALETTE.cream, 0.35),
@@ -235,7 +238,8 @@ function buildMystery(scene: Scene, root: Phaser.GameObjects.Container, index: n
   slice.forEach((clue, i) => {
     const x = i * (colW + PAGE.gap);
     const found = step >= clue.step;
-    root.add(cardFrame(scene, x, 0, colW, box.h));
+    const frame = cardFrame(scene, x, 0, colW, box.h);
+    root.add(frame);
     const wrap = colW - 28;
     root.add(makeText(scene, x + 14, 14, fill(STRINGS.journalExtras.clue, { n: clue.step }), { size: PAGE.smallSize, weight: 700, color: PAGE.lockedColor }).setOrigin(0, 0));
     root.add(makeText(scene, x + 14, 38, found ? clue.title : STRINGS.journal.locked, { size: PAGE.nameSize, hand: true, wrap, color: found ? PALETTE.ink : PAGE.lockedColor }).setOrigin(0, 0));
@@ -248,8 +252,16 @@ function buildMystery(scene: Scene, root: Phaser.GameObjects.Container, index: n
       textY = 84 + BOOK.lantern.h + 40;
     }
     const body = found ? clue.journal : clue.hint;
-    root.add(makeText(scene, x + 14, textY, body, { size: found ? 21 : PAGE.hintSize, hand: true, wrap, color: found ? PALETTE.ink : PAGE.lockedColor }).setOrigin(0, 0));
-    if (found) root.add(stamp(scene, x + colW - 40, box.h - 40, 0.65));
+    const bodyText = makeText(scene, x + 14, textY, body, { size: found ? 21 : PAGE.hintSize, hand: true, wrap, color: found ? PALETTE.ink : PAGE.lockedColor }).setOrigin(0, 0);
+    root.add(bodyText);
+    // tighten the frame to the text (plus room for the stamp) instead of leaving empty paper below
+    const cardH = Math.min(box.h, Math.max(PAGE.mysteryMinH, textY + bodyText.height + PAGE.mysteryFoot));
+    frame.clear();
+    frame.fillStyle(hexToInt(PAGE.cardFill), 0.75);
+    frame.fillRoundedRect(x, 0, colW, cardH, PAGE.cardRadius);
+    frame.lineStyle(2, hexToInt(PAGE.cardLine), 0.9);
+    frame.strokeRoundedRect(x, 0, colW, cardH, PAGE.cardRadius);
+    if (found) root.add(stamp(scene, x + colW - 40, cardH - 40, 0.65));
   });
 }
 

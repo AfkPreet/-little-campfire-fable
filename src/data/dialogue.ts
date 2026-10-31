@@ -142,6 +142,7 @@ export const STRINGS = {
     cookedNew: 'Cooked {Dish} (new!)',
     cooked: 'Cooked {Dish}',
     moment: 'Moment: {Moment}',
+    quietDay: 'A quiet day',
     sweetDreams: 'Sweet dreams...',
   },
 
@@ -273,6 +274,11 @@ export const STRINGS = {
     store: 'Store',
     stored: 'Back in the backpack',
     decorate: 'Decorate',
+  },
+  /** Bookshelf and hammock bubbles (systems/decorSeats.ts). */
+  decorSeats: {
+    read: 'Read',
+    nap: 'Nap',
   },
   hudExtras: {
     journalSoon: 'Journal: coming soon',

@@ -292,6 +292,11 @@ export class JournalScene extends Phaser.Scene {
   }
 
   // ---------- leaving ----------
+  /** Close from outside (Esc / J in systems/keyboard.ts). */
+  requestClose(): void {
+    this.close();
+  }
+
   private close(): void {
     if (this.closing) return;
     this.closing = true;

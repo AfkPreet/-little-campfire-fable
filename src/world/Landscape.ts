@@ -78,6 +78,8 @@ export type LandscapeOpts = {
   viewWidth?: number;
   /** stars in the field (default 60; boards with several landscapes share the particle budget) */
   starCount?: number;
+  /** draw the dotted tent-spot markers (default true; the Title hides them) */
+  tentSpots?: boolean;
 };
 
 export type LandscapeLayers = {
@@ -221,6 +223,7 @@ export class Landscape {
   private flyTarget = 0;
   private rainFx?: RainHandle;
   private vignette!: Image;
+  private readonly showTentSpots: boolean;
 
   constructor(scene: Phaser.Scene, opts: LandscapeOpts) {
     this.scene = scene;
@@ -228,6 +231,7 @@ export class Landscape {
     this.worldWidth = opts.worldWidth ?? WORLD_WIDTH;
     this.viewW = opts.viewWidth ?? viewport().w;
     this.parallax = opts.parallax;
+    this.showTentSpots = opts.tentSpots !== false;
     this.skyKey = `${SKY_KEYS.gradient}-${this.id}`;
     this.waterKey = `${WATER_KEYS.base}-${this.id}`;
     this.paintAll();
@@ -426,10 +430,12 @@ export class Landscape {
     const path = this.mk(0, LAYOUT.groundY + 16, GROUND_KEYS.path).setOrigin(0, 1);
     ground.add([strip, bankEnd, rise, path]);
     this.groundImgs.push(strip, bankEnd, rise, path);
-    for (const sp of LAYOUT.tentSpots) {
-      const im = this.mk(sp.x, sp.y, GROUND_KEYS.tentSpot);
-      ground.add(im);
-      this.groundImgs.push(im);
+    if (this.showTentSpots) {
+      for (const sp of LAYOUT.tentSpots) {
+        const im = this.mk(sp.x, sp.y, GROUND_KEYS.tentSpot);
+        ground.add(im);
+        this.groundImgs.push(im);
+      }
     }
     const scatter = this.mk(LAYOUT.jamunTree.x, LAYOUT.groundY + 6, GROUND_KEYS.jamunScatter);
     ground.add(scatter);

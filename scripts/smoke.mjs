@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 5198;
 const base = `http://127.0.0.1:${PORT}/`;
 
-const server = await createServer({ root, server: { port: PORT, strictPort: true, host: '127.0.0.1' }, logLevel: 'error' });
+const server = await createServer({ root, server: { port: PORT, strictPort: true, host: '127.0.0.1', hmr: false, watch: null }, logLevel: 'error' });
 await server.listen();
 const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width: 1180, height: 820 }, deviceScaleFactor: 1, hasTouch: true });

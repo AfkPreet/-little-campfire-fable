@@ -30,6 +30,8 @@ import { installMoments } from '@/systems/moments';
 import { installDecorMode } from '@/systems/decorMode';
 import { installCompanion } from '@/systems/companionFlow';
 import { installMystery } from '@/systems/mysteryFlow';
+import { installKeyboard } from '@/systems/keyboard';
+import { installDecorSeats } from '@/systems/decorSeats';
 
 /** Camera and input tuning for the Camp scene. */
 export const CAMP = {
@@ -54,6 +56,8 @@ export type CampHooks = {
   onWaterTap?: (x: number, y: number) => void;
   /** The hero is about to walk/act: let a flow cancel its own state (e.g. reel in). */
   onInterrupt?: () => void;
+  /** A sit/nap pose ended (decorSeats drops the held book). */
+  onStandUp?: () => void;
 };
 
 /** HUD scene surface Camp talks to (methods are optional: the HUD is another module). */
@@ -74,6 +78,8 @@ export class CampScene extends Phaser.Scene implements CampContext {
   api!: CampApi;
   hooks: CampHooks = {};
   activity: HeroActivity = 'none';
+  /** Vertical offset added to the hero's ground y (the hammock nap lifts the hero into the sling). */
+  heroLift = 0;
   /** The pitched (or pitching) tent, if any. */
   tent: Tent | null = null;
 
@@ -129,6 +135,8 @@ export class CampScene extends Phaser.Scene implements CampContext {
     installDecorMode(this);
     installCompanion(this);
     installMystery(this);
+    installDecorSeats(this);
+    installKeyboard(this);
     this.api = installCampApi(this);
     this.time.delayedCall(CAMP.readyDelayMs, () => {
       window.__game.ready = true;
@@ -138,7 +146,7 @@ export class CampScene extends Phaser.Scene implements CampContext {
 
   update(_t: number, dt: number): void {
     if (this.leaving) return;
-    this.hero.y = groundTopAt(this.hero.x);
+    this.hero.y = groundTopAt(this.hero.x) + this.heroLift;
     this.clock.update(dt);
     this.interactables.update(this.hero.x, this.hero.y);
     this.landscape.sortActors();
@@ -173,6 +181,10 @@ export class CampScene extends Phaser.Scene implements CampContext {
   resumeClock(reason: string): void {
     this.pauseReasons.delete(reason);
     this.clock.onPauseChanged(this.pauseReasons.size > 0);
+  }
+  /** True while the hero is walking off to the shop (input is ignored). */
+  get leavingCamp(): boolean {
+    return this.leaving;
   }
   get clockPaused(): boolean {
     return this.pauseReasons.size > 0;
@@ -223,6 +235,7 @@ export class CampScene extends Phaser.Scene implements CampContext {
     this.activity = 'none';
     this.hero.setPose('stand');
     this.hideActions();
+    this.hooks.onStandUp?.();
   }
 
   /** Leave for the shop: walk to the path, stop HUD, start Shop. */

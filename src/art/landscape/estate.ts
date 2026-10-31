@@ -37,24 +37,27 @@ function coffeeRows(ctx: Ctx, f: (x: number) => number, w: number, rnd: () => nu
     { dy: 47, r: 9 },
   ];
   rows.forEach((row, ri) => {
-    for (let x = rnd() * 16 - row.r; x < w + row.r; x += row.r * 2.3 + rnd() * row.r) {
-      const r = row.r * (0.85 + rnd() * 0.3);
-      const y = f(x) + row.dy + Math.sin(x * 0.045 + ri) * 2 + (rnd() - 0.5) * 3;
+    // irregular spacing, sizes and the odd gap so the rows read as planted bushes, not a dot pattern (REVIEW M0 nit)
+    for (let x = rnd() * 16 - row.r; x < w + row.r; x += row.r * (1.9 + rnd() * 1.8)) {
+      if (rnd() < 0.14) continue;
+      const r = row.r * (0.65 + rnd() * 0.7);
+      const y = f(x) + row.dy + Math.sin(x * 0.045 + ri) * 2 + (rnd() - 0.5) * 5;
+      const fill = mix(BUSH, BASE, rnd() * 0.35);
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = BUSH;
+      ctx.fillStyle = fill;
       ctx.fill();
       ctx.lineWidth = 1;
-      ctx.strokeStyle = alpha(BUSH_SHADE, 0.45);
+      ctx.strokeStyle = alpha(BUSH_SHADE, 0.22);
       ctx.stroke();
       // a soft shaded underside
       ctx.beginPath();
       ctx.arc(x, y, r - 0.5, 0.45, Math.PI * 0.8);
       ctx.closePath();
-      ctx.fillStyle = alpha(BUSH_SHADE, 0.4);
+      ctx.fillStyle = alpha(BUSH_SHADE, 0.2);
       ctx.fill();
       // a faint glint top-left
-      ctx.fillStyle = alpha(BASE, 0.35);
+      ctx.fillStyle = alpha(BASE, 0.22);
       ellipsePath(ctx, x - r * 0.35, y - r * 0.4, r * 0.3, r * 0.2);
       ctx.fill();
     }

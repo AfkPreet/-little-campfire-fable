@@ -127,6 +127,17 @@ export class InteractableManager {
     }
   }
 
+  /** Nearest glowing interactable within LAYOUT.interactRange of (hx, hy), for the keyboard interact key. */
+  nearest(hx: number, hy: number): Interactable | null {
+    let best: Interactable | null = null, bd: number = LAYOUT.interactRange;
+    for (const { i } of this.entries.values()) {
+      if (i.glow === false) continue;
+      const d = Phaser.Math.Distance.Between(hx, hy, i.x, i.y);
+      if (d <= bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+
   /** Ring currently glowing on an interactable (for pop effects). */
   ringOf(id: string): Phaser.GameObjects.Image | undefined {
     return this.ringFor.get(id);

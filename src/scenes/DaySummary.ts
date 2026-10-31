@@ -8,7 +8,9 @@ import { applyViewport, viewport } from '@/config/layout';
 import { PALETTE, hexToInt } from '@/config/palette';
 import { Bloom, BLOOM } from '@/art/hud';
 import { Card, makeText, UI, MODAL } from '@/ui';
-import { isReduceMotion } from '@/fx/juice';
+import { isReduceMotion, popIn } from '@/fx/juice';
+import { sparkleBurst } from '@/fx/particles';
+import { DEBUG } from '@/config/debug';
 import { audio } from '@/audio';
 import { STRINGS, fill, RECIPE_BY_ID, MOMENT_BY_ID, dishInfo } from '@/data';
 import { getState, todayPage, type DayPage } from '@/state';
@@ -30,6 +32,7 @@ const SUMMARY = {
   closeMs: 200,
   maxLines: 3,
   readyMs: 2200,
+  bloomSparkles: 8,
 } as const;
 
 export type DaySummaryData = { page?: DayPage };
@@ -44,7 +47,7 @@ export class DaySummaryScene extends Phaser.Scene {
   create(data: DaySummaryData = {}): void {
     const v = applyViewport(this);
     this.closing = false;
-    const page = data.page ?? todayPage(getState());
+    const page = data.page ?? pageForSummary();
 
     const backdrop = this.add.rectangle(v.w / 2, v.h / 2, v.w * 4, v.h * 4, hexToInt(PALETTE.ink), 0).setDepth(SUMMARY.depth);
     this.tweens.add({ targets: backdrop, fillAlpha: SUMMARY.dim, duration: MODAL.fadeMs });
@@ -56,15 +59,19 @@ export class DaySummaryScene extends Phaser.Scene {
     this.add.existing(card);
 
     const bloom = new Bloom(this, 0, SUMMARY.bloomY + BLOOM.petalH * 0.2);
-    bloom.setScale(SUMMARY.bloomScale);
+    bloom.setScale(SUMMARY.bloomScale).setData('baseScale', SUMMARY.bloomScale).setAlpha(0);
     card.content.add(bloom);
     const open = Phaser.Math.Clamp(page.peakContentment / 100, 0, 1);
+    // the bud pops in closed, then the petals fan open one by one (Bloom.setOpen staggers them) with a sparkle
+    popIn(this, bloom, SUMMARY.popMs, isReduceMotion() ? 0 : SUMMARY.bloomDelayMs * 0.5);
     this.time.delayedCall(isReduceMotion() ? 0 : SUMMARY.bloomDelayMs, () => {
       bloom.setOpen(open, !isReduceMotion());
       audio.sfx.play('sparkle');
+      if (!isReduceMotion()) sparkleBurst(this, card.x, card.y + bloom.y * SUMMARY.bloomScale - BLOOM.petalH * 0.4, SUMMARY.bloomSparkles);
     });
 
     const lines = highlightLines(page);
+    if (lines.length === 0) lines.push(STRINGS.summary.quietDay);
     lines.forEach((line, i) => {
       card.content.add(makeText(this, 0, SUMMARY.linesY + i * SUMMARY.lineGap, line, { size: SUMMARY.lineSize, align: 'center', wrap: w - UI.pad * 2, color: PALETTE.ink }).setOrigin(0.5, 0));
     });
@@ -100,6 +107,15 @@ export class DaySummaryScene extends Phaser.Scene {
     this.tweens.add({ targets: card, alpha: 0, scale: card.scale * 0.92, duration: SUMMARY.closeMs, ease: 'Sine.easeIn' });
     this.tweens.add({ targets: backdrop, fillAlpha: 0, duration: SUMMARY.closeMs, onComplete: done });
   }
+}
+
+/** Today's page; when the overlay is opened straight from the debug URL on an untouched day, the latest trip page. */
+function pageForSummary(): DayPage {
+  const s = getState();
+  const today = todayPage(s);
+  const empty = today.fishCaught === 0 && today.dishesCooked === 0 && today.moments.length === 0;
+  const last = s.journal.trip[s.journal.trip.length - 1];
+  return DEBUG.scene === 'daysummary' && empty && last ? last : today;
 }
 
 /** Up to 3 lines: fish caught, the (new) dish, a moment. */

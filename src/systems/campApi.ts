@@ -11,8 +11,10 @@ import {
   removeFish, removeForage, removePantry, saveNow as storeSaveNow, update, type GameState,
 } from '@/state';
 import { dayTFor, phaseAt } from '@/world/lighting';
-import { ESSENTIALS_TAGGED, GEAR_BY_ID, isFishId, isForageId, isPantryId, matchRecipe } from '@/data';
-import type { CookwareId, DishId, FishId, ForageId, IngredientId, TentId, WeatherKind } from '@/data/types';
+import { ESSENTIALS_TAGGED, GEAR_BY_ID, STRINGS, isFishId, isForageId, isPantryId, matchRecipe } from '@/data';
+import type { CookwareId, DishId, FishId, ForageId, GearId, IngredientId, TentId, WeatherKind } from '@/data/types';
+import { particleBudget } from '@/fx/particles';
+import { Button } from '@/ui/Button';
 import { LAYOUT } from '@/world/layout';
 import { fishingOf } from '@/systems/fishing';
 import { foragingOf } from '@/systems/foraging';
@@ -27,6 +29,9 @@ export const CAMP_API = {
   summaryWaitMaxMs: 8000,
   /** scripts cast from the jetty end toward this water point */
   castTarget: { x: LAYOUT.jetty.x1 + 160, y: 560 },
+  /** Album page flips the api waits between "next" presses, and how many pages it will turn to find the postcard */
+  albumFlipMs: 350,
+  albumMaxFlips: 16,
 } as const;
 
 export interface CampApi {
@@ -52,6 +57,24 @@ export interface CampApi {
   saveNow(): boolean;
   /** Force the companion to peek from the nearest thicket (screenshots). */
   companionPeek(): Promise<void>;
+  /** Give money if needed, then buy one piece of gear (pots, rods, tents...). */
+  buy(id: GearId): boolean;
+  /** Fishing (M4): jump to BITE with the "!" up and hold there (screenshots). */
+  forceBite(fishId?: FishId): boolean;
+  /** Fishing (M4): open the catch card for a species (screenshots). */
+  showCatchCard(fishId?: FishId): boolean;
+  /** Primary scene on screen ('Camp', 'Album', 'Intro'...), kept by trackScenes(). */
+  sceneKey(): string | undefined;
+  /** The game loop's measured FPS. */
+  fps(): number;
+  /** Particle slots reserved by live effects, and the budget cap. */
+  particles(): { live: number; max: number };
+  /** Number of textures in the texture manager. */
+  textures(): number;
+  /** Album: press "Stay a little longer" (turns to the postcard page first). Resolves once Camp has started. */
+  stayLonger(): Promise<boolean>;
+  /** Album: press "Start a new trip" and confirm "Start over". Resolves once Intro has started. */
+  newTrip(): Promise<boolean>;
   scene: CampScene;
   /** Extension point for later agents. */
   [k: string]: unknown;
@@ -162,9 +185,76 @@ export function installCampApi(camp: CampScene): CampApi {
     mystery: (step: number) => applyMysteryStep(step),
     /** Mystery (M3): run the finale now (skippable). */
     finale: () => runFinale(camp, { skippable: true }),
+    buy: (id) => {
+      if (getState().inventory.gear[id]) return true;
+      const price = GEAR_BY_ID[id].price;
+      if (!canAfford(price)) earn(price - getState().money);
+      const ok = buyGear(id);
+      markDirty();
+      return ok;
+    },
+    forceBite: (fishId = 'minnow') => fishingOf(camp)?.forceBite(fishId) ?? false,
+    showCatchCard: (fishId = 'minnow') => fishingOf(camp)?.forceCard(fishId) ?? false,
+    sceneKey: () => window.__game.scene,
+    fps: () => camp.game.loop.actualFps,
+    particles: () => ({ live: particleBudget.used, max: particleBudget.max }),
+    textures: () => Object.keys(camp.textures.list).length,
+    stayLonger: () => albumPress(camp, STRINGS.album.stayLonger, SCENES.camp),
+    newTrip: async () => {
+      const opened = await albumPress(camp, STRINGS.album.newTrip, null);
+      if (!opened) return false;
+      await wait(camp, CAMP_API.albumFlipMs);
+      return albumPress(camp, STRINGS.settings.startOver, SCENES.intro);
+    },
   };
-  if (DEBUG.enabled) window.__game.api = api;
+  if (DEBUG.enabled) {
+    window.__game.api = api;
+    // ?bite=1 / ?catch=1 once the camp has settled (screenshots)
+    if (DEBUG.bite || DEBUG.catch) camp.events.once('ready', () => { if (DEBUG.bite) api.forceBite(); else api.showCatchCard(); });
+  }
   return api;
+}
+
+function wait(scene: Phaser.Scene, ms: number): Promise<void> {
+  return new Promise((r) => scene.time.delayedCall(ms, r));
+}
+
+/** Every Button under a scene's display list (containers included). */
+function buttonsOf(scene: Phaser.Scene): Button[] {
+  const out: Button[] = [];
+  const walk = (list: Phaser.GameObjects.GameObject[]): void => {
+    for (const o of list) {
+      if (o instanceof Button) out.push(o);
+      if (o instanceof Phaser.GameObjects.Container) walk(o.list);
+    }
+  };
+  walk(scene.children.list);
+  return out;
+}
+
+/**
+ * Press the Album button with this label through its own pointer events (the real UI path). The album opens on the
+ * cover, so "next" is pressed until the button appears. With `until`, resolves once that scene has started.
+ */
+async function albumPress(camp: CampScene, label: string, until: string | null): Promise<boolean> {
+  const album = camp.scene.get(SCENES.album);
+  if (!album || !album.scene.isActive()) return false;
+  const press = (b: Button): void => { b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN); b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_UP); };
+  for (let i = 0; i <= CAMP_API.albumMaxFlips; i++) {
+    const btns = buttonsOf(album);
+    const target = btns.find((b) => b.label === label);
+    if (target) {
+      press(target);
+      if (!until) return true;
+      for (let k = 0; k < 40 && window.__game.scene !== until; k++) await wait(album, 100);
+      return window.__game.scene === until;
+    }
+    const next = btns.find((b) => b.label === STRINGS.albumExtras.next);
+    if (!next) return false;
+    press(next);
+    await wait(album, CAMP_API.albumFlipMs);
+  }
+  return false;
 }
 
 /** Debug: once the DaySummary overlay is up, tap it closed after a beat so scripted sleeps resolve. */

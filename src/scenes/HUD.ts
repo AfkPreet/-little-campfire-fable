@@ -105,6 +105,14 @@ export class HUDScene extends Phaser.Scene {
   hideBubble(): void {
     this.bubble.hide();
   }
+  /** Keyboard (systems/keyboard.ts): Esc hides an open action bubble before opening the menu. */
+  bubbleOpen(): boolean {
+    return this.bubble.visible;
+  }
+  /** Open the settings menu (Esc). */
+  openMenu(): void {
+    this.openSettings();
+  }
   toast(message: string): void {
     kitToast(this, message);
   }
@@ -166,7 +174,7 @@ export class HUDScene extends Phaser.Scene {
 
   // ---------- journal ----------
   /** Open the Journal overlay over Camp: pause the clock and Camp/HUD taps until 'journal:closed'. */
-  private openJournal(): void {
+  openJournal(): void {
     if (this.scene.isActive(SCENES.journal)) return;
     const camp = this.scene.get(SCENES.camp) as (Phaser.Scene & { pauseClock?: (r: string) => void; resumeClock?: (r: string) => void }) | null;
     const active = !!camp && camp.scene.isActive();
@@ -185,7 +193,7 @@ export class HUDScene extends Phaser.Scene {
 
   // ---------- settings ----------
   /** The shared Settings overlay over Camp; the clock pauses while it is open. A new trip or erase goes to the Intro. */
-  private openSettings(): void {
+  openSettings(): void {
     if (this.settingsHandle && !this.settingsHandle.closed) return;
     const camp = this.scene.get(SCENES.camp) as (Phaser.Scene & { pauseClock?: (r: string) => void; resumeClock?: (r: string) => void }) | null;
     const active = !!camp && camp.scene.isActive();
@@ -203,7 +211,7 @@ export class HUDScene extends Phaser.Scene {
   }
 
   // ---------- backpack ----------
-  private openBackpack(): void {
+  openBackpack(): void {
     if (this.backpackHandle && !this.backpackHandle.closed) return;
     const v = viewport();
     const w = Math.min(HUD.backpack.w, v.w - UI.pad * 2);

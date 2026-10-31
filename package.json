@@ -11,6 +11,8 @@
     "browser:install": "playwright install chromium",
     "shots": "node scripts/shots.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "trip": "node scripts/trip.mjs",
+    "perf": "node scripts/perf.mjs",
     "check:data": "node scripts/check-data.mjs",
     "icons": "node scripts/icons.mjs"
   },

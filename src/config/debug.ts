@@ -3,6 +3,8 @@
  * ?scene=  ?time=dawn|day|golden|dusk|night  ?weather=clear|rain|mist  ?day=  ?seed=  ?state=fresh|midtrip|finale  ?tab=fish|recipes|moments|friends|mystery|trip
  * Scenes read DEBUG rather than parsing the URL themselves.
  */
+import Phaser from 'phaser';
+
 const params = new URLSearchParams(window.location.search);
 const isDev = import.meta.env.DEV;
 
@@ -34,4 +36,26 @@ export const DEBUG = {
   freeze: params.get('freeze') === '1',
   /** Skip the audio-unlock gate and title (headless scripts). */
   noAudio: params.get('noaudio') === '1',
+  /** Fishing (M4 shots): ?bite=1 puts the flow into BITE at once with the "!" up; ?catch=1 opens the catch card for a minnow. */
+  bite: params.get('bite') === '1',
+  catch: params.get('catch') === '1',
+  /** Cooking (M4 shots): open the overlay on the result step for this dish (?scene=cooking&cooked=herb_tea). */
+  cooked: params.get('cooked') ?? undefined,
+  /** Accessibility check: force Reduce motion on regardless of the saved setting (?reducemotion=1). */
+  reduceMotion: params.get('reducemotion') === '1',
 };
+
+/** Scenes that own the screen; overlays (HUD, Cooking, Journal, DaySummary) never replace them in window.__game.scene. */
+const PRIMARY_SCENES = new Set(['Title', 'Intro', 'Shop', 'Camp', 'Album', 'StyleBoard']);
+
+/**
+ * Keep window.__game.scene pointing at the primary scene on screen (scripts read it, see scripts/trip.mjs).
+ * Boot calls this once; it listens to every scene's START event.
+ */
+export function trackScenes(game: Phaser.Game): void {
+  for (const scene of game.scene.getScenes(false)) {
+    const key = scene.scene.key;
+    if (!PRIMARY_SCENES.has(key)) continue;
+    scene.events.on(Phaser.Scenes.Events.START, () => { window.__game.scene = key; });
+  }
+}

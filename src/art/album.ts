@@ -380,15 +380,57 @@ function paintPostcard(scene: Phaser.Scene): void {
     ctx.strokeStyle = alpha(INK, 0.25);
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    // a little stamp square in the corner of the border
-    roundRectPath(ctx, x + w - 46, y + 8, 30, 36, 3);
-    ctx.fillStyle = alpha(PALETTE.rose, 0.55);
-    ctx.fill();
-    ctx.strokeStyle = alpha(INK, 0.25);
-    ctx.setLineDash([3, 3]);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    // a little painted cowrie stamp in the corner of the border
+    cowrieStamp(ctx, x + w - 46, y + 8, 30, 36);
   });
+}
+
+/** A postage stamp: scalloped rose paper with a cream cowrie shell and its toothed slit. */
+function cowrieStamp(ctx: Ctx, x: number, y: number, w: number, h: number): void {
+  ctx.save();
+  // scalloped edge: a rounded rect with little half-circle bites along the sides
+  ctx.beginPath();
+  roundRectPath(ctx, x, y, w, h, 3);
+  ctx.fillStyle = mix(PALETTE.rose, PALETTE.cream, 0.25);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.cream;
+  for (let i = 0; i < 5; i++) {
+    const t = (i + 0.5) / 5;
+    for (const [bx, by] of [[x + w * t, y], [x + w * t, y + h], [x, y + h * t], [x + w, y + h * t]]) {
+      ctx.beginPath();
+      ctx.arc(bx, by, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // inner frame
+  roundRectPath(ctx, x + 4, y + 4, w - 8, h - 8, 2);
+  ctx.strokeStyle = alpha(shade(PALETTE.rose, -0.3), 0.6);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // the cowrie: a cream bean with a darker toothed slit
+  const cx = x + w / 2, cy = y + h / 2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 8, 10.5, -0.35, 0, Math.PI * 2);
+  ctx.fillStyle = PALETTE.cream;
+  ctx.fill();
+  ctx.strokeStyle = alpha(shade(PALETTE.rose, -0.3), 0.7);
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - 2, cy - 7);
+  ctx.quadraticCurveTo(cx + 1, cy, cx - 1, cy + 7);
+  ctx.strokeStyle = alpha(PALETTE.bark, 0.75);
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  for (let i = -5; i <= 5; i += 2.5) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 2 + i * 0.1, cy + i);
+    ctx.lineTo(cx + 1, cy + i + 0.6);
+    ctx.strokeStyle = alpha(PALETTE.bark, 0.45);
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** Five cream petals around a butter heart. */

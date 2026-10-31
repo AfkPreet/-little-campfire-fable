@@ -14,7 +14,8 @@ import { Card, Button, modal, toast, text, makeText, TEX, UI, COLORS, makeIcon, 
 import { TabBar } from '@/ui/TabBar';
 import { ItemCard, ITEM_CARD } from '@/ui/ItemCard';
 import { audio } from '@/audio';
-import { isReduceMotion } from '@/fx/juice';
+import { isReduceMotion, squash } from '@/fx/juice';
+import { sparkleBurst } from '@/fx/particles';
 import { debugMysteryStep, runShopLegend } from '@/systems/mysteryFlow';
 import {
   STRINGS, fill, SHOP_TABS, TENTS, RODS, BAITS, PANTRY, DECOR_FOR_SALE, FISH_BY_ID, FORAGE_BY_ID, ESSENTIALS_TAGGED,
@@ -62,6 +63,7 @@ export class ShopScene extends Phaser.Scene {
   private shopkeeper?: Shopkeeper;
   private bubbleText?: Phaser.GameObjects.Text;
   private moneyText?: Phaser.GameObjects.Text;
+  private coinImg: Phaser.GameObjects.Image | null = null;
   private gridRoot?: Phaser.GameObjects.Container;
   private gridMask?: Phaser.GameObjects.Graphics;
   private gridArea = { x: 0, y: 0, w: 0, h: 0 };
@@ -159,6 +161,7 @@ export class ShopScene extends Phaser.Scene {
     // header + money
     text(this, rightX, L.headerY, fill(STRINGS.shop.header), { size: L.headerSize, weight: 700 }).setOrigin(0, 0.5);
     const coin = img(this, v.w - L.pad, L.headerY, TEX.coin).setOrigin(1, 0.5);
+    this.coinImg = coin;
     this.moneyText = text(this, v.w - L.pad - coin.displayWidth - 6, L.headerY, fill(STRINGS.shopSell.price, { Price: s.money }), { size: L.moneySize, weight: 700 }).setOrigin(1, 0.5);
 
     // tabs
@@ -334,9 +337,18 @@ export class ShopScene extends Phaser.Scene {
     }
     card.bounce();
     audio.sfx.play('pop');
+    this.coinSparkle();
     this.shopkeeper?.nod();
     markDirty();
     this.time.delayedCall(220, () => this.refreshCards());
+  }
+
+  /** A tiny sparkle and squash on the header cowrie when money changes hands. */
+  private coinSparkle(): void {
+    const c = this.coinImg;
+    if (!c || !c.active) return;
+    squash(this, c, 0.18, 220);
+    sparkleBurst(this, c.x - c.displayWidth / 2, c.y, 5);
   }
 
   private doSell(e: SellEntry, qty: number, card: ItemCard): void {
@@ -349,6 +361,7 @@ export class ShopScene extends Phaser.Scene {
     }
     card.bounce();
     audio.sfx.play('pop');
+    this.coinSparkle();
     this.shopkeeper?.nod();
     toast(this, fill(STRINGS.shopSell.sold, { Count: qty, Item: e.name, Amount: earned }));
     markDirty();

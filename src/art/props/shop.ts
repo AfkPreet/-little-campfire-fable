@@ -12,6 +12,9 @@ export const SHOP_KEYS = { exterior: 'shop-exterior', lanternGlow: 'shop-lantern
 export const SHOP_SIZE = { w: 420, h: 300 } as const;
 /** Lantern position in texture-local px (origin bottom-center is at (w/2, h-6)). */
 const LANTERN: XY = { x: 302, y: 142 };
+/** glow pool texture size and peak alpha (kept small: the gatepost next door washed out at 160 px / 0.9) */
+const GLOW_SIZE = 116;
+const GLOW_ALPHA = 0.55;
 
 const WALL = mix(PALETTE.cream, ACCENTS.laterite, 0.1);
 const WALL_LINE = mix(WALL, ACCENTS.laterite, 0.45);
@@ -321,12 +324,12 @@ function paintShopExterior(ctx: Ctx, w: number, h: number): void {
 }
 
 function paintLanternGlow(ctx: Ctx, w: number, h: number): void {
-  softGlow(ctx, w / 2, h / 2, w / 2, PALETTE.glow, 0.8);
+  softGlow(ctx, w / 2, h / 2, w / 2, PALETTE.glow, 0.6);
 }
 
 export function paintShop(scene: Phaser.Scene): void {
   paintTexture(scene, SHOP_KEYS.exterior, SHOP_SIZE.w, SHOP_SIZE.h, paintShopExterior);
-  paintTexture(scene, SHOP_KEYS.lanternGlow, 160, 160, paintLanternGlow);
+  paintTexture(scene, SHOP_KEYS.lanternGlow, GLOW_SIZE, GLOW_SIZE, paintLanternGlow);
 }
 
 export type ShopRig = { container: Phaser.GameObjects.Container; body: Phaser.GameObjects.Image; glow: Phaser.GameObjects.Image; setNight(k: number): void };
@@ -341,6 +344,6 @@ export function makeShop(scene: Phaser.Scene, x: number, y: number): ShopRig {
   container.add([body, glow]);
   return {
     container, body, glow,
-    setNight(k: number) { glow.setAlpha(Phaser.Math.Clamp(k, 0, 1) * 0.9); },
+    setNight(k: number) { glow.setAlpha(Phaser.Math.Clamp(k, 0, 1) * GLOW_ALPHA); },
   };
 }

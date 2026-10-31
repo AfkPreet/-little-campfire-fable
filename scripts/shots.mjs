@@ -60,13 +60,38 @@ const SHOTS = {
     { name: 'album-day', q: 'scene=album&state=midtrip&page=2', settle: 900 },
     { name: 'album-postcard', q: 'scene=album&state=midtrip&page=last', settle: 900 },
   ],
+  // M4: the final shot list (spec section 11)
+  m4: [
+    { name: 'title', q: 'scene=title', settle: 1200 },
+    { name: 'intro', q: 'scene=intro', settle: 800 },
+    { name: 'shop', q: 'scene=shop&state=fresh', settle: 900 },
+    { name: 'camp-dawn', q: 'scene=camp&state=midtrip&time=dawn', settle: 1500 },
+    { name: 'camp-day', q: 'scene=camp&state=midtrip&time=day', settle: 1500 },
+    { name: 'camp-golden', q: 'scene=camp&state=midtrip&time=golden', settle: 1500 },
+    { name: 'camp-dusk', q: 'scene=camp&state=midtrip&time=dusk', settle: 1500 },
+    { name: 'camp-night', q: 'scene=camp&state=midtrip&time=night', settle: 1500 },
+    { name: 'camp-rain', q: 'scene=camp&state=midtrip&time=day&weather=rain', settle: 1500 },
+    { name: 'fishing-bite', q: 'scene=camp&state=midtrip&time=day&bite=1', settle: 1400 },
+    { name: 'catch-card', q: 'scene=camp&state=midtrip&catch=1', settle: 1400 },
+    { name: 'cooking-result', q: 'scene=cooking&state=midtrip&cooked=herb_tea', settle: 1200 },
+    { name: 'decorated-camp-night', q: 'scene=camp&state=midtrip&time=night', settle: 1500 },
+    { name: 'journal-fish', q: 'scene=journal&state=midtrip&tab=fish', settle: 900 },
+    { name: 'mystery-finale', q: 'scene=camp&state=finale&finale=moonbow', settle: 10000 },
+    { name: 'album-postcard', q: 'scene=album&state=midtrip&page=last', settle: 900 },
+  ],
+  // Accessibility check: Reduce motion forced on
+  a11y: [
+    { name: 'camp-night-reducemotion', q: 'scene=camp&state=midtrip&time=night&reducemotion=1', settle: 1500 },
+    { name: 'cooking-reducemotion', q: 'scene=cooking&state=midtrip&reducemotion=1', settle: 1200 },
+    { name: 'cooking-result-reducemotion', q: 'scene=cooking&state=midtrip&cooked=herb_tea&reducemotion=1', settle: 1200 },
+  ],
 };
 
 const list = (SHOTS[milestone] ?? SHOTS.m0).filter((s) => !only || s.name.includes(only));
 const outDir = path.join(root, 'shots', milestone);
 await mkdir(outDir, { recursive: true });
 
-const server = await createServer({ root, server: { port: 5199, strictPort: true, host: '127.0.0.1' }, logLevel: 'error' });
+const server = await createServer({ root, server: { port: 5199, strictPort: true, host: '127.0.0.1', hmr: false, watch: null }, logLevel: 'error' });
 await server.listen();
 const base = `http://127.0.0.1:5199/`;
 

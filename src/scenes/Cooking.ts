@@ -10,7 +10,7 @@ import { SCENES } from '@/scenes/Boot';
 import { applyViewport, viewport, type Viewport } from '@/config/layout';
 import { DEBUG } from '@/config/debug';
 import { PALETTE, hexToInt } from '@/config/palette';
-import { COOKWARE, FISH_BY_ID, FORAGE_BY_ID, PANTRY_BY_ID, STRINGS, fill, matchRecipe, dishInfo, COOKING } from '@/data';
+import { COOKWARE, FISH_BY_ID, FORAGE_BY_ID, PANTRY_BY_ID, RECIPE_BY_ID, STRINGS, fill, isDishId, matchRecipe, dishInfo, COOKING } from '@/data';
 import type { CookwareId, DishId, FishId, ForageId, IngredientId, PantryId } from '@/data/types';
 import { getState, initStore, removePantry, removeForage, removeFish, addDish, recordCook, discoverRecipe, eatDish, companionVisit, markDirty } from '@/state';
 import type { DebugStateKind } from '@/state';
@@ -114,6 +114,7 @@ export class CookingScene extends Phaser.Scene {
       this.selectCookware(owned[0]);
       this.buildTray();
       this.setPhase('pick');
+      if (DEBUG.enabled && DEBUG.cooked) this.debugResult(DEBUG.cooked, owned);
     }
 
     audio.ambience.set({ dayT: getState().dayT, rain: getState().weather.raining ? 0.5 : 0, nearFire: 1 });
@@ -423,6 +424,15 @@ export class CookingScene extends Phaser.Scene {
     this.potItems = [];
     this.setPhase('result');
     this.showResult(match.recipeId, isNew);
+  }
+
+  /** Debug (?scene=cooking&cooked=herb_tea): jump to the result step for a dish without consuming anything. */
+  private debugResult(raw: string, owned: CookwareId[]): void {
+    if (!isDishId(raw)) return;
+    const want = raw === 'mystery_mush' ? null : RECIPE_BY_ID[raw].cookware;
+    if (want && owned.includes(want)) this.selectCookware(want);
+    this.setPhase('result');
+    this.showResult(raw, raw !== 'mystery_mush');
   }
 
   // ---------- result ----------

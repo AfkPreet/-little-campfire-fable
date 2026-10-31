@@ -12,15 +12,20 @@ import { FIRE_SIZES } from '@/art/props/fire';
 import type { BubbleAction } from '@/ui/Bubble';
 import { decorSitPoint } from '@/systems/decorMode';
 import { companionOf } from '@/systems/companionFlow';
+import { squash } from '@/fx/juice';
+import { heartsFloat } from '@/fx/particles';
 
 export const FIRE_FLOW = {
   hit: { w: FIRE_SIZES.ring.w, h: 90 },
   radius: 110,
   pauseReason: 'cooking',
+  /** the hero munches this long after eating */
+  munchMs: 1500,
+  munchHearts: 3,
 } as const;
 
-/** What the Cooking scene hands back through 'cooking:closed' (loosely typed: the Cooking agent owns the shape). */
-export type CookingResult = { cooked?: string; eaten?: boolean; newRecipe?: boolean } | undefined;
+/** What the Cooking scene hands back through 'cooking:closed' (see scenes/Cooking.ts CookedResult). */
+export type CookingResult = { cooked?: { dishId: string; isNew: boolean; action: 'eat' | 'save' | 'share' } | null } | undefined;
 
 export class FireFlow {
   constructor(private readonly camp: CampScene) {}
@@ -55,10 +60,20 @@ export class FireFlow {
     return new Promise((resolve) => {
       this.camp.events.once('cooking:closed', (result: CookingResult) => {
         this.camp.resumeClock(FIRE_FLOW.pauseReason);
+        if (result?.cooked?.action === 'eat') this.munch();
         resolve(result);
       });
       this.camp.scene.launch(SCENES.cooking, { companionNear: companionOf(this.camp)?.isNear() ?? false });
     });
+  }
+
+  /** After eating: munching face, puffed cheeks (blush) and hearts for a moment, then back to happy. */
+  private munch(): void {
+    const hero = this.camp.hero;
+    hero.setExpression('munching');
+    squash(this.camp, hero, 0.1, 240);
+    heartsFloat(this.camp, hero.x, hero.y - 70, FIRE_FLOW.munchHearts);
+    this.camp.time.delayedCall(FIRE_FLOW.munchMs, () => { if (hero.active) hero.setExpression('happy'); });
   }
 
   /** Walk to the cushion and sit facing the fire. clockRunner pays fireSitting while activity === 'fireSit'. */
