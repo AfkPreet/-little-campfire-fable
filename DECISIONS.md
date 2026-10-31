@@ -93,3 +93,16 @@ Grafted from the Vietnam concept: paper lanterns under the shop awning and the l
 | Debug API | `window.__game.api` (buyEssentials, pitchTent, forage, fish, cook, eatLastDish, sleep, saveNow, state) drives `npm run smoke` | Driving the UI with synthetic taps | Deterministic and fast; the UI is reviewed by screenshots instead. |
 | Hero sleep | A curled nap pose (lean back 28°, feet tucked, tail curled over) | A rotated lying-on-back rig | The rotated rig read as fallen over on the title screen. |
 | Currency icon | Cowrie shell painted in the UI kit | Generic coin | The bible's currency is cowries; the shell reads at 24 px. |
+
+## 7. M2 and M3 decisions
+
+| Area | Chosen | Rejected | Why |
+| --- | --- | --- | --- |
+| Journal pages | Built by a pure page builder (`ui/JournalPages.ts`) from state; silhouettes are the real icon tinted ink at 30% | Separate silhouette textures | One source of truth per entry; "???" entries stay consistent with the discovered art. |
+| Rare moments | One system (`systems/moments.ts`) rolls at dawn and night, checks sit time for the firefly swirl, and plays banner + visual + stamp | Per-moment code in the scenes | The table in the spec is data; the system reads it. |
+| Decor placement | Snap points are generated from the tent's hang points, two jamun-branch points, a ground ring and the hammock point; Fairy Lights span the two nearest hang points | A free-placement grid | Snap points keep placements readable and animatable; the spec asks for snap points. |
+| Companion | Lives in the clearing-back layer while peeking (leaves draw in front), moves to the actors layer once out | A mask | No masks on characters; depth ordering does the job. |
+| Mystery finale | A 45 s scripted beat list in `systems/finale.ts` with stage jumps for screenshots; the camera leaves the hero and pans toward the guardian at 0.5 scale | Guardian at 0.64 scale with the camera on the hero | At 0.64 she filled the frame like a wall with her tail off-screen; the pan plus 0.5 shows the whole body on iPad and phone. |
+| Trip end | Album scene after the Night 7 summary; "Stay a little longer" continues the same loop with no day cap; "Start a new trip" keeps journal and badges | Ending the game at Day 7 | The spec's free play; the journal is the player's keepsake across trips. |
+| Settings access | A 44 px menu button under the HUD day label opens the shared SettingsOverlay (also used by the Title) | Settings only on the Title | The spec's "Esc menu" implies in-game access; the overlay pauses the clock. |
+| Grammar | "over Manjukere" rather than "over the Manjukere" | The spec's literal "the {Water}" | A proper noun reads wrong with the article; the placeholder semantics are kept. |
