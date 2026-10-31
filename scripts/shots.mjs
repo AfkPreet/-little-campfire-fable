@@ -108,7 +108,7 @@ try {
       const url = `${base}?debug=1&noaudio=1&freeze=1&${shot.q}`;
       await page.goto(url, { waitUntil: 'load' });
       try {
-        await page.waitForFunction(() => window.__game && window.__game.ready === true, null, { timeout: 20000 });
+        await page.waitForFunction(() => window.__game && window.__game.ready === true, null, { timeout: 45000 });
       } catch {
         console.warn(`[shots] ${shot.name}@${vpName}: ready flag never set (timeout)`);
         failures++;

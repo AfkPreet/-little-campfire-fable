@@ -29,6 +29,8 @@ export const CAMP_API = {
   summaryWaitMaxMs: 8000,
   /** scripts cast from the jetty end toward this water point */
   castTarget: { x: LAYOUT.jetty.x1 + 160, y: 560 },
+  /** wall-clock delay before ?bite=1 / ?catch=1 fire */
+  debugTriggerMs: 900,
   /** where scripts stand to cast (the jetty end) */
   castStandX: LAYOUT.jetty.x1 - 34,
   /** Album page flips the api waits between "next" presses, and how many pages it will turn to find the postcard */
@@ -215,7 +217,8 @@ export function installCampApi(camp: CampScene): CampApi {
   if (DEBUG.enabled) {
     window.__game.api = api;
     // ?bite=1 / ?catch=1 once the camp has settled (screenshots)
-    if (DEBUG.bite || DEBUG.catch) camp.events.once('ready', () => { if (DEBUG.bite) api.forceBite(); else api.showCatchCard(); });
+    // wall-clock timer: Camp may have emitted 'ready' before this install, and scene timers crawl in headless runs
+    if (DEBUG.bite || DEBUG.catch) setTimeout(() => { if (!camp.scene.isActive()) return; if (DEBUG.bite) api.forceBite(); else api.showCatchCard(); }, CAMP_API.debugTriggerMs);
   }
   return api;
 }
