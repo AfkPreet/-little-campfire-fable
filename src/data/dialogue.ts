@@ -264,6 +264,16 @@ export const STRINGS = {
     rainLettingUp: 'The rain is letting up',
   },
 
+  /** Decor mode (M2): tray and item bubble labels the spec implies but does not word. */
+  decorExtras: {
+    tray: 'Decorate',
+    trayEmpty: 'Nothing to place. The shop has cozy things!',
+    done: 'Done',
+    move: 'Move',
+    store: 'Store',
+    stored: 'Back in the backpack',
+    decorate: 'Decorate',
+  },
   hudExtras: {
     journalSoon: 'Journal: coming soon',
     backpackEmpty: 'Nothing in here yet.',

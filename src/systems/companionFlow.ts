@@ -42,8 +42,8 @@ export const COMPANION_FLOW = {
   jettySeatDx: -36,
   /** curled beside the fire-ring stones, away from the cushion side */
   fireSleepDx: 64,
-  /** the leaf line sits this fraction of the thicket's height above its base */
-  leafLineFrac: 0.78,
+  /** the leaf line (bush top) sits this fraction of the thicket texture height above its base */
+  leafLineFrac: 1.06,
   /** hearts rise from about the head */
   headY: -40,
   interactableId: 'companion-peek',
@@ -82,7 +82,8 @@ export class CompanionFlow {
     this.camp.events.on('update', this.onUpdate, this);
     this.camp.events.on('cooking:closed', this.onCookingClosed, this);
     this.checkTimer = this.camp.time.addEvent({ delay: COMPANION_FLOW.checkMs, loop: true, callback: () => this.checkPeek() });
-    if (DEBUG.enabled && DEBUG.peek) this.camp.events.once('ready', () => void this.forcePeek());
+    // not on 'ready': the first frames paint every texture, so scene time lags real time by seconds
+    if (DEBUG.enabled && DEBUG.peek) void this.forcePeek();
   }
 
   destroy(): void {

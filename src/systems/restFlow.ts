@@ -15,6 +15,7 @@ import { viewport } from '@/config/layout';
 import { isReduceMotion } from '@/fx/juice';
 import { audio } from '@/audio';
 import type { BubbleAction } from '@/ui/Bubble';
+import { enterDecorMode } from '@/systems/decorMode';
 
 export const REST_FLOW = {
   fadeMs: 800,
@@ -39,6 +40,7 @@ export class RestFlow {
   tentActions(tent: Tent): BubbleAction[] {
     const acts: BubbleAction[] = [{ label: STRINGS.bubbles.rest, onPick: () => void this.rest(tent) }];
     if (getState().isNight) acts.push({ label: STRINGS.bubbles.sleep, onPick: () => void this.askSleep() });
+    acts.push({ label: STRINGS.bubbles.decorate, onPick: () => enterDecorMode() });
     return acts;
   }
 

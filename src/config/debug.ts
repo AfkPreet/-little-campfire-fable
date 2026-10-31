@@ -21,6 +21,8 @@ export const DEBUG = {
   tab: params.get('tab') ?? undefined,
   /** Force the companion to peek once Camp settles (screenshots): ?peek=1 */
   peek: params.get('peek') === '1',
+  /** Enter decor mode once Camp settles (screenshots): ?decor=1 */
+  decor: params.get('decor') === '1',
   /** Freeze all animation time at a fixed value (screenshots): ?freeze=1 */
   freeze: params.get('freeze') === '1',
   /** Skip the audio-unlock gate and title (headless scripts). */

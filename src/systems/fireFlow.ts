@@ -10,6 +10,7 @@ import { STRINGS } from '@/data';
 import { LAYOUT } from '@/world/layout';
 import { FIRE_SIZES } from '@/art/props/fire';
 import type { BubbleAction } from '@/ui/Bubble';
+import { decorSitPoint } from '@/systems/decorMode';
 import { companionOf } from '@/systems/companionFlow';
 
 export const FIRE_FLOW = {
@@ -63,9 +64,10 @@ export class FireFlow {
   /** Walk to the cushion and sit facing the fire. clockRunner pays fireSitting while activity === 'fireSit'. */
   async sit(): Promise<void> {
     this.camp.hideActions();
-    await this.camp.walkHeroTo(LAYOUT.cushion.x);
-    if (Math.abs(this.camp.hero.x - LAYOUT.cushion.x) > 2) return; // interrupted
-    this.camp.hero.setFacing(LAYOUT.fire.x > LAYOUT.cushion.x ? 1 : -1);
+    const seat = decorSitPoint('cushion') ?? LAYOUT.cushion;
+    await this.camp.walkHeroTo(seat.x);
+    if (Math.abs(this.camp.hero.x - seat.x) > 2) return; // interrupted
+    this.camp.hero.setFacing(LAYOUT.fire.x > seat.x ? 1 : -1);
     this.camp.hero.setPose('sit');
     this.camp.hero.setExpression('happy');
     this.camp.activity = 'fireSit';

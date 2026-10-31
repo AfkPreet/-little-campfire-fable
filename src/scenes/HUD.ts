@@ -16,8 +16,9 @@ import { iconFor, paintItemTextures } from '@/art/items';
 import { Button, Bubble, TEX, UI, makeText, makeIcon, toast as kitToast, modal as kitModal, overlay, type BubbleAction, type ModalOpts, type OverlayHandle } from '@/ui';
 import { squash, isReduceMotion } from '@/fx/juice';
 import { audio } from '@/audio';
-import { STRINGS, fill, GEAR_BY_ID, BAIT_BY_ID, PANTRY_BY_ID, FORAGE_BY_ID, FISH_BY_ID, dishInfo, type GearId, type BaitId, type PantryId, type ForageId } from '@/data';
-import { getState, subscribe, tierOf, tierLabel, phaseOf, type GameState } from '@/state';
+import { STRINGS, fill, GEAR_BY_ID, BAIT_BY_ID, PANTRY_BY_ID, FORAGE_BY_ID, FISH_BY_ID, dishInfo, type GearId, type BaitId, type PantryId, type ForageId, type DecorId, DECOR } from '@/data';
+import { getState, subscribe, tierOf, tierLabel, phaseOf, decorInBackpack, type GameState } from '@/state';
+import { enterDecorMode } from '@/systems/decorMode';
 
 const HUD = {
   margin: 16,
@@ -30,11 +31,11 @@ const HUD = {
   moonTo: 0.85,
   bounceMs: 220,
   readyMs: 300,
-  backpack: { w: 440, h: 520, rowH: 56, iconSize: 40, nameSize: 18 },
+  backpack: { w: 440, h: 520, rowH: 56, iconSize: 40, nameSize: 18, decorateW: 112 },
   journalPause: 'journal',
 } as const;
 
-type Row = { key: string; name: string; count: string };
+type Row = { key: string; name: string; count: string; decor?: DecorId };
 
 export class HUDScene extends Phaser.Scene {
   private root!: Phaser.GameObjects.Container;
@@ -201,8 +202,12 @@ export class HUDScene extends Phaser.Scene {
           c.add([
             ic,
             makeText(this, left + HUD.backpack.iconSize + UI.gap, y, r.name, { size: HUD.backpack.nameSize, weight: 600, color: PALETTE.ink }).setOrigin(0, 0.5),
-            makeText(this, w / 2 - UI.pad, y, r.count, { size: HUD.backpack.nameSize, weight: 700, color: shade(PALETTE.ink, 0.1), align: 'right' }).setOrigin(1, 0.5),
+            makeText(this, w / 2 - UI.pad - (r.decor ? HUD.backpack.decorateW + UI.gap : 0), y, r.count, { size: HUD.backpack.nameSize, weight: 700, color: shade(PALETTE.ink, 0.1), align: 'right' }).setOrigin(1, 0.5),
           ]);
+          if (r.decor) {
+            const id = r.decor;
+            c.add(new Button(this, w / 2 - UI.pad - HUD.backpack.decorateW / 2, y, STRINGS.decorExtras.decorate, () => { this.backpackHandle?.close(); enterDecorMode(id); }, { kind: 'secondary', width: HUD.backpack.decorateW, height: UI.pillH, size: 16 }));
+          }
         });
         c.add(new Button(this, 0, h / 2 - UI.pad - UI.buttonH / 2, STRINGS.settings.cancel, () => this.backpackHandle?.close(), { kind: 'secondary', width: w - UI.pad * 2 }));
       },
@@ -222,5 +227,6 @@ function inventoryRows(scene: Phaser.Scene): Row[] {
   for (const [id, n] of Object.entries(inv.forage) as [ForageId, number][]) if (n > 0) rows.push({ key: iconFor(scene, id, 'forage'), name: FORAGE_BY_ID[id].name, count: count(n) });
   for (const f of inv.fish) rows.push({ key: iconFor(scene, f.id, 'fish'), name: fill(STRINGS.hudExtras.fishSize, { Fish: FISH_BY_ID[f.id].name, Size: f.cm }), count: '' });
   for (const d of inv.dishes) rows.push({ key: iconFor(scene, d.id, 'dish'), name: dishInfo(d.id).name, count: '' });
+  for (const d of DECOR) { const n = decorInBackpack(d.id); if (n > 0) rows.push({ key: iconFor(scene, d.id), name: d.name, count: count(n), decor: d.id }); }
   return rows;
 }

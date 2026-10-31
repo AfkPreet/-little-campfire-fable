@@ -128,7 +128,9 @@ export function createDebugState(kind: DebugStateKind, seed: number = 7): GameSt
   s.camp.pitched = true;
   s.camp.pegsTapped = 4;
   placeDecor(s, 'lantern', 'tent_hang_0');
-  placeDecor(s, 'cushion', 'ground_1');
+  placeDecor(s, 'cushion', 'ground_3');
+  placeDecor(s, 'bunting', 'tent_hang_2');
+  placeDecor(s, 'lights', 'jamun-left');
   s.inventory.bait.bait_wiggly = 3;
   s.inventory.pantry.rice = 2;
   s.inventory.pantry.honey = 1;
