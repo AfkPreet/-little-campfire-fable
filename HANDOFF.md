@@ -10,7 +10,7 @@ A cozy kawaii 2D side-view camping game for the browser (touch-first, landscape)
 | M1 vertical slice | Done. Title → intro → shop → camp → tent → fish → forage → cook → eat → sleep → summary → Day 2. `npm run smoke` plays Day 1 headlessly and checks the save. |
 | M2 full systems | Done. All content, selling, weather with guarantees, Contentment tiers, journal (6 tabs, 36 stamps, 2 badges), companion, rare moments, decor mode. |
 | M3 mystery and trip end | Done. Five clues, the guardian finale, Trip Album, next-campsite teaser, free play, new trip, settings menu. |
-| M4 polish and ship | Polish pass, keyboard controls, full-trip test (`npm run trip`), FPS probe, icons, social image, manifest, meta tags, `MUSIC_BRIEF.md`. **Deploy is blocked on Vercel credentials** (see below). |
+| M4 polish and ship | Done except the deploy: juice pass, keyboard controls (A/D or arrows, E/Space, J, B, Esc), bookshelf reading and hammock naps, Reduce motion and Large text, full-trip test (`npm run trip`), FPS probe (`npm run perf`), icons, social image, manifest, meta tags, `MUSIC_BRIEF.md`. **Deploy is blocked on Vercel credentials** (see below). |
 
 ## Where each system lives
 
@@ -62,6 +62,9 @@ Music files are optional: drop the four MP3s described in `MUSIC_BRIEF.md` into 
 - The far-estate coffee rows still read as a soft dot pattern in flat daylight on wide phones.
 - Phone-width Journal and Album pages are scaled to fit rather than re-flowed.
 - Large text (1.2x) applies on the next scene create, not live.
+- The laterite gatepost by the shop reads pale under the awning lantern's additive glow at dusk and night.
+- The "New recipe" toast briefly overlaps the cookware row in the Cooking overlay.
+- The first screenshot of a cold `npm run shots` run can hit the ready wait on slow machines; the shot is still taken.
 - Vercel deployment not done (credentials, above).
 
 ## Top 5 next ideas
