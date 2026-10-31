@@ -8,7 +8,7 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
     chunkSizeWarningLimit: 2000,
-    rollupOptions: { output: { manualChunks: { phaser: ['phaser'] } } },
+    rollupOptions: { output: { manualChunks: (id: string) => (id.includes('node_modules/phaser') ? 'phaser' : undefined) } },
   },
   server: { strictPort: true },
 });
