@@ -106,3 +106,13 @@ Grafted from the Vietnam concept: paper lanterns under the shop awning and the l
 | Trip end | Album scene after the Night 7 summary; "Stay a little longer" continues the same loop with no day cap; "Start a new trip" keeps journal and badges | Ending the game at Day 7 | The spec's free play; the journal is the player's keepsake across trips. |
 | Settings access | A 44 px menu button under the HUD day label opens the shared SettingsOverlay (also used by the Title) | Settings only on the Title | The spec's "Esc menu" implies in-game access; the overlay pauses the clock. |
 | Grammar | "over Manjukere" rather than "over the Manjukere" | The spec's literal "the {Water}" | A proper noun reads wrong with the article; the placeholder semantics are kept. |
+
+## 8. M4 decisions
+
+| Area | Chosen | Rejected | Why |
+| --- | --- | --- | --- |
+| Headless testing | Scripts drive `window.__game.api`; debug actions teleport the hero (fishing) and jump finale stages, and debug waits use the wall clock | Waiting on real walks and scene timers | Headless Chromium runs the game loop 3-10x slow, and a scene's timers stop when it is replaced; the first trip runs stalled on a two-minute walk and on a timer of a stopped Album scene. |
+| Full-trip evidence | `npm run trip` plays Days 1-7, opens the Album, stays longer (Day 8), reopens the Album and starts a new trip; `npm run smoke` stays the fast Day-1 check | One combined script | The trip run takes about twenty minutes headless; the smoke run stays under a minute for every commit. |
+| Build | Vite 8 with `manualChunks` as a function (Phaser in its own chunk) | The object form | Vite 8's bundler rejects the object form. |
+| Icons and social image | Rendered by `npm run icons` from the live art (boards `icon` and `social`) at exact pixel sizes via device scale factors | Hand-exported PNGs | The spec asks for icons from the hero's face using the same art code; re-rendering after any art change is one command. |
+| Deploy | Documented two credential paths (local `vercel login`; `VERCEL_TOKEN` environment secret) and left the deploy pending | Shipping to another host | The spec locks Vercel; this environment had no Vercel user, no temporary-deploy allowance and no browser for the login flow. |
