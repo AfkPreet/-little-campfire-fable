@@ -15,6 +15,7 @@ import { TabBar } from '@/ui/TabBar';
 import { ItemCard, ITEM_CARD } from '@/ui/ItemCard';
 import { audio } from '@/audio';
 import { isReduceMotion } from '@/fx/juice';
+import { debugMysteryStep, runShopLegend } from '@/systems/mysteryFlow';
 import {
   STRINGS, fill, SHOP_TABS, TENTS, RODS, BAITS, PANTRY, DECOR_FOR_SALE, FISH_BY_ID, FORAGE_BY_ID, ESSENTIALS_TAGGED,
   gearVisibleInShop, dishInfo, isBaitId, isTentId, isRodId, isCookwareId,
@@ -85,6 +86,8 @@ export class ShopScene extends Phaser.Scene {
     paintItemTextures(this);
     this.tab = 'camp';
     this.build(viewport());
+    // mystery clue 3: the legend plays once the shop has settled (mysteryFlow owns the sequence)
+    if (debugMysteryStep() === 2) this.time.delayedCall(SHOP_LAYOUT.readyMs, () => void runShopLegend(this, { say: (l) => { this.say(l); this.bubbleText?.setScale(Math.min(1, (SHOP_LAYOUT.bubbleH - 20) / Math.max(1, this.bubbleText.height))); }, nod: () => this.shopkeeper?.nod() ?? Promise.resolve(), hintAt: { x: (viewport().w * SHOP_LAYOUT.leftFrac) / 2, y: SHOP_LAYOUT.bubbleY + SHOP_LAYOUT.bubbleH / 2 + 100 } }));
 
     const onViewport = (v: Viewport) => {
       applyViewport(this);

@@ -34,6 +34,8 @@ export class ClockRunner {
   fireLitByPlayer = false;
   /** Mist level the weather flow is cross-fading (burn-off, misty sunrise); null = read from the state. */
   mistOverride: number | null = null;
+  /** Rain level the finale is cross-fading (softening rain); null = read from the state. */
+  rainOverride: number | null = null;
   lighting!: Lighting;
 
   constructor(private readonly camp: CampScene) {
@@ -61,7 +63,7 @@ export class ClockRunner {
   private weatherFor(): { rain: number; mist: number } {
     const w = getState().weather;
     const mist = this.mistOverride ?? (w.kind === 'mist' && !w.mistBurnedOff ? 1 : 0);
-    return { rain: w.raining ? 1 : 0, mist };
+    return { rain: this.rainOverride ?? (w.raining ? 1 : 0), mist };
   }
 
   /** Push the current weather (state + mist override) to the landscape and ambience now. */
@@ -151,7 +153,7 @@ export class ClockRunner {
     const nearFire = this.fireLit ? Phaser.Math.Clamp(1 - dFire / LAYOUT.firelightRadius, 0, 1) : 0;
     audio.ambience.set({
       dayT: s.dayT,
-      rain: s.weather.raining ? 1 : 0,
+      rain: this.rainOverride ?? (s.weather.raining ? 1 : 0),
       nearWater,
       nearFire,
       inTent: this.camp.activity === 'rest',

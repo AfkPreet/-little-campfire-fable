@@ -48,7 +48,17 @@ const SHOTS = {
     { name: 'moment-rainbow', q: 'scene=camp&state=midtrip&time=dawn&moment=rainbow', settle: 5000 },
     { name: 'moment-shooting-star', q: 'scene=camp&state=midtrip&time=night&moment=shooting_star', settle: 5000 },
     { name: 'decorated-camp-night', q: 'scene=camp&state=midtrip&time=night', settle: 1500 },
-    { name: 'decor-mode', q: 'scene=camp&state=midtrip&time=day&decor=1', settle: 1800 },
+    { name: 'decor-mode', q: 'scene=camp&state=midtrip&time=day&decor=1', settle: 3000 },
+  ],
+  m3: [
+    { name: 'mystery-glow', q: 'scene=camp&state=fresh&time=night&mystery=0&glow=1', settle: 3000 },
+    { name: 'scale-sparkle', q: 'scene=camp&state=midtrip&time=dawn&mystery=1&scale=1', settle: 2500 },
+    { name: 'legend', q: 'scene=shop&state=midtrip&mystery=2', settle: 2500 },
+    { name: 'finale-rise', q: 'scene=camp&state=finale&finale=rise', settle: 9000 },
+    { name: 'finale-moonbow', q: 'scene=camp&state=finale&finale=moonbow', settle: 10000 },
+    { name: 'album-cover', q: 'scene=album&state=midtrip', settle: 900 },
+    { name: 'album-day', q: 'scene=album&state=midtrip&page=2', settle: 900 },
+    { name: 'album-postcard', q: 'scene=album&state=midtrip&page=last', settle: 900 },
   ],
 };
 

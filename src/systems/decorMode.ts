@@ -34,8 +34,8 @@ export const DECOR_MODE = {
   ring: { breatheMs: 1400, breathe: 0.08, hotScale: 1.25 },
   ghostAlpha: 0.85,
   ghostScale: 1.1,
-  /** screenshots: enter this long after Camp is ready */
-  debugEnterMs: 300,
+  /** screenshots (?decor=1): enter this long after Camp create, wall clock */
+  debugEnterMs: 1000,
   tapPx: 12,
 } as const;
 
@@ -92,7 +92,8 @@ class DecorModeImpl implements DecorMode {
     this.unsubscribe = subscribe((_s, tag) => { if (tag === 'camp' || tag === 'set' || tag === 'load') this.syncPlaced(); });
     camp.events.on('dawn', this.syncPlaced, this);
     camp.events.once('shutdown', () => this.destroy());
-    if (DEBUG.decor) camp.events.once('ready', () => camp.time.delayedCall(DECOR_MODE.debugEnterMs, () => this.enter()));
+    // wall-clock timer: headless screenshot runs throttle Phaser's scene clock, so a delayedCall would arrive late
+    if (DEBUG.decor) window.setTimeout(() => { if (current === this && camp.scene.isActive()) this.enter(); }, DECOR_MODE.debugEnterMs);
   }
 
   destroy(): void {
@@ -231,7 +232,9 @@ class DecorModeImpl implements DecorMode {
     this.tray?.destroy();
     const T = DECOR_MODE.tray, v = viewport();
     const items = DECOR.filter((d) => decorInBackpack(d.id) > 0);
-    const listW = Math.max(T.cell * 2, items.length * T.cell);
+    // the empty note is measured first so the card is wide enough for it beside the Done button
+    const empty = items.length === 0 ? makeText(ui, 0, 10, STRINGS.decorExtras.trayEmpty, { size: T.labelSize, color: shade(PALETTE.ink, 0.25) }).setOrigin(0, 0.5) : null;
+    const listW = Math.max(T.cell * 2, items.length * T.cell, empty ? empty.width + UI.pad : 0);
     const w = Math.min(v.w - UI.pad * 2, listW + T.doneW + UI.pad * 3);
     const h = T.h;
     const c = ui.add.container(v.w / 2, v.h - T.bottomPad - h / 2).setDepth(T.depth);
@@ -239,9 +242,7 @@ class DecorModeImpl implements DecorMode {
     c.add(nineCard(ui, 0, 0, w, h, false));
     c.add(makeText(ui, -w / 2 + UI.pad, -h / 2 + 8, STRINGS.decorExtras.tray, { size: T.labelSize, weight: 700, color: shade(PALETTE.ink, 0.15) }).setOrigin(0, 0));
     const left = -w / 2 + UI.pad;
-    if (items.length === 0) {
-      c.add(makeText(ui, left, 10, STRINGS.decorExtras.trayEmpty, { size: T.labelSize, color: shade(PALETTE.ink, 0.25) }).setOrigin(0, 0.5));
-    }
+    if (empty) c.add(empty.setX(left));
     items.forEach((d, i) => {
       const x = left + i * T.cell + T.cell / 2, y = 10;
       const ic = makeImg(ui, x, y, itemIconKey(d.id));

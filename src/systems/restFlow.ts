@@ -8,7 +8,7 @@ import type { CampScene } from '@/scenes/Camp';
 import { SCENES } from '@/scenes/Boot';
 import type { Tent } from '@/entities/Tent';
 import { endDay, getState } from '@/state';
-import { STRINGS } from '@/data';
+import { STRINGS, TIME } from '@/data';
 import { LAYOUT } from '@/world/layout';
 import { PALETTE, hexToInt } from '@/config/palette';
 import { viewport } from '@/config/layout';
@@ -90,6 +90,8 @@ export class RestFlow {
       camp.events.once('summary:closed', () => resolve());
       camp.scene.launch(SCENES.daysummary, { page });
     });
+    // Night 7 ends the trip: the Album takes over (it stops Camp + HUD; "Stay a little longer" restarts Camp at dawn)
+    if (page.day === TIME.tripDays) { this.sleeping = false; camp.scene.start(SCENES.album); return; }
 
     // dawn
     const tent = camp.tent;

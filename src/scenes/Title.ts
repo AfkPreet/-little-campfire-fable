@@ -3,7 +3,7 @@
  * Begin / Continue / Settings and the footer. Settings is an overlay bound to the store and the audio buses.
  */
 import Phaser from 'phaser';
-import { SCENES, applySettings, LARGE_TEXT_SCALE } from '@/scenes/Boot';
+import { SCENES } from '@/scenes/Boot';
 import { applyViewport, viewport, type Viewport } from '@/config/layout';
 import { PALETTE, shade } from '@/config/palette';
 import { DEBUG } from '@/config/debug';
@@ -14,12 +14,12 @@ import { LAYOUT, GROUND_Y } from '@/world/layout';
 import { lightingAt, dayTFor } from '@/world/lighting';
 import { Hero } from '@/entities/Hero';
 import { fireflies, type FirefliesHandle } from '@/fx/particles';
-import { setReduceMotion, isReduceMotion } from '@/fx/juice';
-import { Button, Slider, Toggle, modal, overlay, makeText, UI, type OverlayHandle } from '@/ui';
-import { setTextScale } from '@/ui/text';
+import { isReduceMotion } from '@/fx/juice';
+import { Button, modal, makeText, UI, type OverlayHandle } from '@/ui';
+import { openSettings } from '@/ui/SettingsOverlay';
 import { audio } from '@/audio';
 import { STRINGS, fill } from '@/data';
-import { hasSave, startNewTrip, eraseEverything, updateSettings, getState, setFlag } from '@/state';
+import { hasSave, startNewTrip, setFlag } from '@/state';
 
 /** Layout tuning (logical px). */
 const TITLE = {
@@ -38,7 +38,6 @@ const TITLE = {
   fireflies: 22,
   readyMs: 500,
   depth: { scenery: 0, ui: 10 },
-  settings: { w: 420, h: 560, sliderW: 300 },
 } as const;
 
 export class TitleScene extends Phaser.Scene {
@@ -165,65 +164,10 @@ export class TitleScene extends Phaser.Scene {
   // ---------- settings ----------
   private openSettings(): void {
     if (this.settingsHandle && !this.settingsHandle.closed) return;
-    const s = getState().settings;
-    const S = STRINGS.settings;
-    const v = viewport();
-    const w = Math.min(TITLE.settings.w, v.w - UI.pad * 2);
-    const h = Math.min(TITLE.settings.h, v.h - UI.pad * 2);
-    this.settingsHandle = overlay(this, {
-      w, h, title: S.title,
+    this.settingsHandle = openSettings(this, {
       onClose: () => { this.settingsHandle = null; },
-      build: (card) => {
-        const c = card.content;
-        const left = -w / 2 + UI.pad;
-        const sliderW = Math.min(TITLE.settings.sliderW, w - UI.pad * 2);
-        let y = -h / 2 + UI.pad + 34 + 36;
-        const rowH = 66;
-        const addSlider = (label: string, value: number, onChange: (k: number) => void) => {
-          c.add(new Slider(this, 0, y, { label, width: sliderW, value, onChange }));
-          y += rowH;
-        };
-        addSlider(S.music, s.music, (k) => { updateSettings({ music: k }); audio.engine.setVolumes({ music: k }); });
-        addSlider(S.sounds, s.sounds, (k) => { updateSettings({ sounds: k }); audio.engine.setVolumes({ sfx: k }); audio.sfx.play('plip'); });
-        addSlider(S.ambience, s.ambience, (k) => { updateSettings({ ambience: k }); audio.engine.setVolumes({ ambience: k }); });
-        y += 4;
-        const addToggle = (label: string, value: boolean, onChange: (b: boolean) => void) => {
-          const t = new Toggle(this, w / 2 - UI.pad - 32, y, { value, onChange });
-          c.add([makeText(this, left, y, label, { size: 18, weight: 600 }).setOrigin(0, 0.5), t]);
-          y += 52;
-        };
-        addToggle(S.reduceMotion, s.reduceMotion, (b) => { updateSettings({ reduceMotion: b }); setReduceMotion(b); });
-        addToggle(S.largeText, s.largeText, (b) => { updateSettings({ largeText: b }); setTextScale(b ? LARGE_TEXT_SCALE : 1); });
-        y += 10;
-        const bw = w - UI.pad * 2;
-        c.add(new Button(this, 0, y + UI.buttonH / 2, S.newTrip, () => this.confirmNewTrip(), { kind: 'secondary', width: bw }));
-        y += UI.buttonH + UI.gap;
-        c.add(new Button(this, 0, y + UI.buttonH / 2, S.erase, () => this.confirmErase(), { kind: 'secondary', width: bw }));
-        y += UI.buttonH + UI.gap;
-        c.add(new Button(this, 0, y + UI.buttonH / 2, S.cancel, () => this.settingsHandle?.close(), { kind: 'primary', width: bw }));
-      },
-    });
-  }
-
-  private confirmNewTrip(): void {
-    const S = STRINGS.settings;
-    modal(this, {
-      title: S.newTrip, body: S.newTripConfirm,
-      buttons: [
-        { label: S.keepCamping, kind: 'secondary' },
-        { label: S.startOver, kind: 'primary', onPick: () => { startNewTrip(); applySettings(); this.settingsHandle?.close(); this.rebuild(); } },
-      ],
-    });
-  }
-
-  private confirmErase(): void {
-    const S = STRINGS.settings;
-    modal(this, {
-      title: S.erase, body: S.eraseConfirm,
-      buttons: [
-        { label: S.cancel, kind: 'secondary' },
-        { label: S.eraseConfirmButton, kind: 'primary', onPick: () => { eraseEverything(); applySettings(); this.settingsHandle?.close(); this.rebuild(); } },
-      ],
+      onNewTrip: () => this.rebuild(),
+      onErase: () => this.rebuild(),
     });
   }
 

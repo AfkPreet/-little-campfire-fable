@@ -131,6 +131,9 @@ export function createDebugState(kind: DebugStateKind, seed: number = 7): GameSt
   placeDecor(s, 'cushion', 'ground_3');
   placeDecor(s, 'bunting', 'tent_hang_2');
   placeDecor(s, 'lights', 'jamun-left');
+  // two more in the backpack, still to place (the decor tray has something to show)
+  s.camp.decorOwned.flower = 1;
+  s.camp.decorOwned.chime = 1;
   s.inventory.bait.bait_wiggly = 3;
   s.inventory.pantry.rice = 2;
   s.inventory.pantry.honey = 1;

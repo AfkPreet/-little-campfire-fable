@@ -15,10 +15,12 @@ import { DISH_KEYS, paintDishes } from '@/art/dishes';
 import { Bloom } from '@/art/hud';
 import { Companion } from '@/entities/Companion';
 import { BOOK, JOURNAL_TEX, paintJournalTextures, vignetteKey, type JournalTab } from '@/art/journal';
-import { TEX, makeStars } from './kit';
+import { TEX, UI, makeStars } from './kit';
+import { Button } from './Button';
+import { SCENES } from '@/scenes/Boot';
 import { makeText } from './text';
 import {
-  STRINGS, fill, FISH, RECIPES, MOMENTS, MYSTERY_CLUES, RARITY_STARS, COOKWARE_BY_ID, dishInfo, FISH_BY_ID, MOMENT_BY_ID, COMPANION, WORLD,
+  STRINGS, fill, FISH, RECIPES, MOMENTS, MYSTERY_CLUES, RARITY_STARS, COOKWARE_BY_ID, dishInfo, FISH_BY_ID, MOMENT_BY_ID, COMPANION, WORLD, TIME,
 } from '@/data';
 import type { GameState } from '@/state';
 
@@ -43,6 +45,7 @@ export const PAGE = {
   starScale: 0.8,
   friendHearts: COMPANION.hearts,
   bloomScale: 0.9,
+  albumButtonW: 240,
 } as const;
 
 type Scene = Phaser.Scene;
@@ -274,5 +277,10 @@ function buildTrip(scene: Scene, root: Phaser.GameObjects.Container, index: numb
     const t = makeText(scene, tx, y, line, { size: 21, hand: true, wrap, color: PAGE.bodyColor }).setOrigin(0, 0);
     root.add(t);
     y += t.height + 10;
+  }
+  // once the trip is complete, the last page opens the Trip Album (Album stops Camp + HUD itself)
+  const last = index === state.journal.trip.length - 1;
+  if (last && state.journal.trip.length >= TIME.tripDays) {
+    root.add(new Button(scene, tx + PAGE.albumButtonW / 2, box.h - UI.buttonH / 2 - 12, STRINGS.albumExtras.openAlbum, () => scene.scene.start(SCENES.album), { kind: 'primary', width: PAGE.albumButtonW }));
   }
 }

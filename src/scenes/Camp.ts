@@ -29,6 +29,7 @@ import { installTiers } from '@/systems/tiers';
 import { installMoments } from '@/systems/moments';
 import { installDecorMode } from '@/systems/decorMode';
 import { installCompanion } from '@/systems/companionFlow';
+import { installMystery } from '@/systems/mysteryFlow';
 
 /** Camera and input tuning for the Camp scene. */
 export const CAMP = {
@@ -127,6 +128,7 @@ export class CampScene extends Phaser.Scene implements CampContext {
     installMoments(this);
     installDecorMode(this);
     installCompanion(this);
+    installMystery(this);
     this.api = installCampApi(this);
     this.time.delayedCall(CAMP.readyDelayMs, () => {
       window.__game.ready = true;

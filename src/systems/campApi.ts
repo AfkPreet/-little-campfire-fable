@@ -17,6 +17,8 @@ import { LAYOUT } from '@/world/layout';
 import { fishingOf } from '@/systems/fishing';
 import { foragingOf } from '@/systems/foraging';
 import { companionOf } from '@/systems/companionFlow';
+import { applyMysteryStep } from '@/systems/mysteryFlow';
+import { runFinale } from '@/systems/finale';
 
 export const CAMP_API = {
   /** auto-continue the DaySummary this long after it opens */
@@ -156,6 +158,10 @@ export function installCampApi(camp: CampScene): CampApi {
     },
     saveNow: () => storeSaveNow(),
     companionPeek: () => companionOf(camp)?.forcePeek() ?? Promise.resolve(),
+    /** Mystery (M3): set the clue step (0-5) with its prerequisite flags. */
+    mystery: (step: number) => applyMysteryStep(step),
+    /** Mystery (M3): run the finale now (skippable). */
+    finale: () => runFinale(camp, { skippable: true }),
   };
   if (DEBUG.enabled) window.__game.api = api;
   return api;

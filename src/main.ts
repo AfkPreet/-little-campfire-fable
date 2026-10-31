@@ -16,6 +16,7 @@ import { HUDScene } from '@/scenes/HUD';
 import { CookingScene } from '@/scenes/Cooking';
 import { DaySummaryScene } from '@/scenes/DaySummary';
 import { JournalScene } from '@/scenes/Journal';
+import { AlbumScene } from '@/scenes/Album';
 import { drawRotateHero } from '@/art/rotateCard';
 
 declare global {
@@ -57,7 +58,7 @@ const game = new Phaser.Game({
   },
   input: { activePointers: 2, touch: { capture: true } },
   fps: { target: 60, min: 30 },
-  scene: [BootScene, TitleScene, IntroScene, ShopScene, CampScene, HUDScene, CookingScene, DaySummaryScene, JournalScene, StyleBoardScene],
+  scene: [BootScene, TitleScene, IntroScene, ShopScene, CampScene, HUDScene, CookingScene, DaySummaryScene, JournalScene, AlbumScene, StyleBoardScene],
 });
 
 installViewport(game);

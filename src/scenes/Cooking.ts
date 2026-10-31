@@ -21,6 +21,7 @@ import { audio } from '@/audio';
 import { makeImg } from '@/art/pipeline';
 import { COOKWARE_KEYS, COOKWARE_BOWL, paintCookware, makeCloseFire, type CloseFireRig } from '@/art/cookware';
 import { DISH_KEYS, paintDishes } from '@/art/dishes';
+import { MYSTERY_ART, makeGlowDisc } from '@/art/mystery';
 import { ING_KEYS, paintIngredients } from '@/art/ingredients';
 import { StirGesture } from '@/systems/stirGesture';
 
@@ -436,6 +437,7 @@ export class CookingScene extends Phaser.Scene {
     const plate = makeImg(this, 0, iconY, DISH_KEYS[dishId]);
     const b = L.result.iconScale / 2;
     plate.setScale(b).setData('baseScale', b).setAlpha(0);
+    if (dishId === MYSTERY_ART.dish) card.content.add(makeGlowDisc(this, 0, iconY, L.result.iconScale * 90).setAlpha(0.5)); // the kadubu glow (mystery clue 4)
     card.content.add(plate);
     const name = makeText(this, 0, iconY + 78, info.name, { hand: true, size: 34, color: PALETTE.ink, align: 'center' }).setOrigin(0.5);
     const sub = makeText(this, 0, iconY + 112, dishId === 'mystery_mush' ? STRINGS.cooking.noMatch : info.flavor, { size: 16, color: PALETTE.bark, align: 'center', wrap: L.result.w - UI.pad * 2 }).setOrigin(0.5, 0);

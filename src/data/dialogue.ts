@@ -306,6 +306,46 @@ export const STRINGS = {
     prev: 'Previous page',
     next: 'Next page',
   },
+
+  /** Mystery chrome (M3 mysteryFlow / finale): strings the spec implies but does not word. Clue texts live in MYSTERY_CLUES. */
+  mystery: {
+    sparkleLabel: '?',
+    scaleTitle: 'Glimmering Scale',
+    scaleBody: 'Warm to the touch, and it shimmers like the water at dusk.',
+    recipeTitle: 'Moonlight Kadubu',
+    recipeFrom: "{Shopkeeper}'s old recipe card",
+    recipeCookWith: 'Steam in the {Cookware}',
+    tapToContinue: 'Tap to continue',
+    close: 'Close',
+    skip: 'Skip',
+    gift: 'Gift: {Gift}',
+  },
+
+  /** Trip Album chrome (M3 Album scene): page titles and small labels the spec implies but does not word. */
+  albumExtras: {
+    title: 'Trip Album',
+    subtitle: 'Seven days by {Water}',
+    dayTitle: 'Day {n}',
+    peak: 'Peak contentment {n}',
+    fishCaught: '{n} fish',
+    dishesCooked: '{n} dishes',
+    bestCatch: 'Best catch',
+    mostCooked: 'Most cooked',
+    quietDay: 'A quiet day',
+    companionTitle: 'A new friend',
+    companionShy: 'Something shy kept watching from the bushes...',
+    companionShares: 'Shared {n} meals',
+    mysteryTitle: 'The glow on the water',
+    postcardTitle: 'Postcard',
+    endTitle: 'Thank you for camping',
+    endBody: 'The fire is still warm. What now?',
+    openAlbum: 'Open the album',
+    close: 'Close',
+    prev: 'Previous page',
+    next: 'Next page',
+    pageOf: '{i} / {n}',
+    tapToOpen: 'Tap to open',
+  },
 } as const;
 
 export type Strings = typeof STRINGS;

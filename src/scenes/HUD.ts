@@ -12,6 +12,8 @@ import { applyViewport, viewport, type Viewport } from '@/config/layout';
 import { PALETTE, shade } from '@/config/palette';
 import { makeImg } from '@/art/pipeline';
 import { Lantern, paintHudTextures } from '@/art/hud';
+import { ALBUM_TEX, paintAlbumTextures } from '@/art/album';
+import { openSettings } from '@/ui/SettingsOverlay';
 import { iconFor, paintItemTextures } from '@/art/items';
 import { Button, Bubble, TEX, UI, makeText, makeIcon, toast as kitToast, modal as kitModal, overlay, type BubbleAction, type ModalOpts, type OverlayHandle } from '@/ui';
 import { squash, isReduceMotion } from '@/fx/juice';
@@ -33,6 +35,9 @@ const HUD = {
   readyMs: 300,
   backpack: { w: 440, h: 520, rowH: 56, iconSize: 40, nameSize: 18, decorateW: 112 },
   journalPause: 'journal',
+  settingsPause: 'settings',
+  /** menu button: top-right under the day label */
+  menuY: 32 + 8 + UI.minTouch / 2,
 } as const;
 
 type Row = { key: string; name: string; count: string; decor?: DecorId };
@@ -50,6 +55,7 @@ export class HUDScene extends Phaser.Scene {
   private lastTier = '';
   private unsubscribe: (() => void) | null = null;
   private backpackHandle: OverlayHandle | null = null;
+  private settingsHandle: OverlayHandle | null = null;
 
   constructor() {
     super(SCENES.hud);
@@ -119,6 +125,8 @@ export class HUDScene extends Phaser.Scene {
     this.sun = makeIcon(this, right - 16, top + 16, TEX.sun);
     this.moon = makeIcon(this, right - 16, top + 16, TEX.moon);
     this.dayText = makeText(this, right - 36 - HUD.iconGap, top + 16, '', { size: HUD.daySize, weight: 600, align: 'right', ...shadowText }).setOrigin(1, 0.5);
+    paintAlbumTextures(this);
+    const menu = new Button(this, right - UI.minTouch / 2, top + HUD.menuY, STRINGS.title.settings, () => this.openSettings(), { kind: 'icon', icon: ALBUM_TEX.menu, width: UI.minTouch });
     // bottom-left: lantern
     this.lantern = new Lantern(this, left + 28, bottom - 36);
     this.lantern.setInteractive(new Phaser.Geom.Rectangle(-UI.minTouch / 2 - 4, -UI.minTouch / 2 - 10, UI.minTouch + 8, UI.minTouch + 20), Phaser.Geom.Rectangle.Contains);
@@ -130,7 +138,7 @@ export class HUDScene extends Phaser.Scene {
     // bottom-right: backpack + journal
     const journal = new Button(this, right - UI.iconButton / 2, bottom - UI.iconButton / 2, STRINGS.hud.journal, () => this.openJournal(), { kind: 'icon', icon: TEX.journal });
     const backpack = new Button(this, right - UI.iconButton * 1.5 - UI.gap, bottom - UI.iconButton / 2, STRINGS.hud.backpack, () => this.openBackpack(), { kind: 'icon', icon: TEX.backpack });
-    this.root.add([this.coin, this.moneyText, this.sun, this.moon, this.dayText, this.lantern, journal, backpack]);
+    this.root.add([this.coin, this.moneyText, this.sun, this.moon, this.dayText, menu, this.lantern, journal, backpack]);
   }
 
   private refresh(s: GameState, tag: string): void {
@@ -173,6 +181,25 @@ export class HUDScene extends Phaser.Scene {
       });
     }
     this.scene.launch(SCENES.journal, {});
+  }
+
+  // ---------- settings ----------
+  /** The shared Settings overlay over Camp; the clock pauses while it is open. A new trip or erase goes to the Intro. */
+  private openSettings(): void {
+    if (this.settingsHandle && !this.settingsHandle.closed) return;
+    const camp = this.scene.get(SCENES.camp) as (Phaser.Scene & { pauseClock?: (r: string) => void; resumeClock?: (r: string) => void }) | null;
+    const active = !!camp && camp.scene.isActive();
+    if (active) camp.pauseClock?.(HUD.settingsPause);
+    let leaving = false;
+    this.settingsHandle = openSettings(this, {
+      onClose: () => {
+        this.settingsHandle = null;
+        if (leaving) return;
+        if (active) camp.resumeClock?.(HUD.settingsPause);
+      },
+      onNewTrip: () => { leaving = true; this.scene.stop(SCENES.camp); this.scene.start(SCENES.intro); },
+      onErase: () => { leaving = true; this.scene.stop(SCENES.camp); this.scene.start(SCENES.title); },
+    });
   }
 
   // ---------- backpack ----------
