@@ -86,6 +86,8 @@ export class AlbumScene extends Phaser.Scene {
     // scene instances are reused by Phaser: reset per-visit state so a reopened album starts on the cover
     this.page = 0;
     this.pageRoot = null;
+    this.flipping = false;
+    this.leaving = false;
     this.buildCover(s);
     this.buildBook();
     this.layout(v);
