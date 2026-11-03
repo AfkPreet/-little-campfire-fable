@@ -1,0 +1,290 @@
+<title>Little Monsoon Ad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Patrick+Hand&display=swap">
+<style>
+  /* Layout: one 16:9 stage, five timed beats stacked and cross-faded over 15 s; chrome (progress, replay) below it. */
+  :root {
+    --cream: #F6EFE6;
+    --ink: #4A4250;
+    --rose: #D9A0A6;
+    --butter: #F2DFA7;
+    --glow: #FFD59A;
+    --lavender: #B9AACB;
+    --dusk: #8E86B5;
+    --night: #2F3558;
+    --page: #EFE6DA;
+    --page-fg: #4A4250;
+    --muted: #8A7F8C;
+    --font-display: "Baloo 2", "Nunito", "Trebuchet MS", sans-serif;
+    --font-hand: "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+    --ad-length: 15s;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page: #2A2538; --page-fg: #F6EFE6; --muted: #B9AACB; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --page: #2A2538; --page-fg: #F6EFE6; --muted: #B9AACB; color-scheme: dark; }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--page);
+    color: var(--page-fg);
+    font-family: var(--font-display);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding-block: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+  .stage {
+    position: relative;
+    width: min(100%, calc((100vh - 110px) * 16 / 9), 1600px);
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 2cqw;
+    background: var(--night);
+    container-type: inline-size;
+    box-shadow: 0 18px 50px rgba(74, 66, 80, 0.25);
+    color: var(--cream);
+  }
+  body.video { padding: 0; gap: 0; background: var(--night); }
+  body.video .stage { width: 100vw; height: 100vh; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
+  body.video .chrome { display: none; }
+
+  .beat { position: absolute; inset: 0; opacity: 0; }
+  .beat img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sky { position: absolute; inset: 0; background: linear-gradient(180deg, var(--dusk) 0%, #E9A9A6 70%, var(--butter) 100%); }
+  .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(47, 53, 88, 0) 40%, rgba(47, 53, 88, 0.55) 100%); }
+  canvas.flies { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* type */
+  .line {
+    position: absolute; left: 6cqw; right: 6cqw; margin: 0;
+    font-family: var(--font-hand); font-weight: 400;
+    font-size: 5cqw; line-height: 1.15; letter-spacing: 0.01em;
+    text-shadow: 0 0.2cqw 1.2cqw rgba(47, 53, 88, 0.45);
+    text-wrap: balance;
+  }
+  .line.top { top: 9cqw; }
+  .line.bottom { bottom: 9cqw; }
+  .line.center { top: 50%; transform: translateY(-50%); text-align: center; }
+  .chip {
+    position: absolute;
+    font-family: var(--font-display); font-weight: 700; font-size: 2.2cqw;
+    color: var(--ink); background: var(--cream);
+    padding: 0.7cqw 1.8cqw; border-radius: 3cqw;
+    border: 0.18cqw solid #E2D5C2;
+    box-shadow: 0 0.4cqw 1.2cqw rgba(74, 66, 80, 0.18);
+    white-space: nowrap;
+  }
+
+  /* beat 3: two tilted polaroids */
+  .polaroid {
+    position: absolute; width: 44cqw; background: var(--cream); padding: 1.2cqw 1.2cqw 3.6cqw;
+    border-radius: 0.8cqw; box-shadow: 0 1.2cqw 3cqw rgba(74, 66, 80, 0.28);
+  }
+  .polaroid img { position: static; width: 100%; aspect-ratio: 1180 / 820; object-fit: cover; border-radius: 0.4cqw; }
+  .polaroid figcaption { position: absolute; left: 0; right: 0; bottom: 0.9cqw; text-align: center; font-family: var(--font-hand); font-size: 2.3cqw; color: var(--ink); }
+  .polaroid.left { left: 5cqw; top: 9cqw; transform: rotate(-4deg); }
+  .polaroid.right { right: 5cqw; top: 17cqw; transform: rotate(3deg); }
+
+  /* beat 5: the card */
+  .card {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 54cqw; padding: 3cqw 3cqw 2.6cqw; box-sizing: border-box;
+    background: var(--cream); color: var(--ink); border-radius: 2.4cqw;
+    border: 0.18cqw solid #E2D5C2;
+    box-shadow: 0 1.4cqw 3.4cqw rgba(74, 66, 80, 0.3);
+    display: grid; grid-template-columns: 11cqw 1fr; gap: 0 2cqw; align-items: center;
+  }
+  .card img { position: static; width: 11cqw; height: 11cqw; border-radius: 2.6cqw; object-fit: cover; }
+  .card h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 5.4cqw; line-height: 1; letter-spacing: -0.01em; }
+  .card .sub { margin: 0.4cqw 0 0; font-family: var(--font-hand); font-size: 2.8cqw; color: #7A6F7C; }
+  .card .cta { grid-column: 1 / -1; margin-top: 2cqw; display: flex; gap: 1.2cqw; align-items: center; flex-wrap: wrap; }
+  .card .pill { font-family: var(--font-display); font-weight: 700; font-size: 2.2cqw; color: var(--cream); background: var(--rose); padding: 0.8cqw 2.2cqw; border-radius: 3cqw; }
+  .card .meta { font-family: var(--font-display); font-weight: 600; font-size: 1.8cqw; color: #8A7F8C; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* chrome */
+  .chrome { width: min(100%, 1600px); display: flex; align-items: center; gap: 14px; }
+  .bar { flex: 1; height: 6px; border-radius: 3px; background: rgba(138, 127, 140, 0.25); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--rose); border-radius: 3px; }
+  button.replay {
+    font: 700 15px var(--font-display); color: var(--ink); background: var(--cream);
+    border: 1.5px solid #E2D5C2; border-radius: 22px; padding: 10px 18px; min-height: 44px; cursor: pointer;
+    box-shadow: 0 3px 10px rgba(74, 66, 80, 0.15);
+  }
+  button.replay:hover { background: #FFF8EE; }
+  button.replay:focus-visible { outline: 3px solid var(--rose); outline-offset: 2px; }
+  .note { font-size: 13px; color: var(--muted); }
+
+  /* ---------- timeline: 15 s = 100%; five beats of 3 s (20%) with 0.5 s (3.3%) crossfades ---------- */
+  .play .b1 { animation: b1 var(--ad-length) linear forwards; }
+  .play .b2 { animation: b2 var(--ad-length) linear forwards; }
+  .play .b3 { animation: b3 var(--ad-length) linear forwards; }
+  .play .b4 { animation: b4 var(--ad-length) linear forwards; }
+  .play .b5 { animation: b5 var(--ad-length) linear forwards; }
+  .play .b1 img { animation: kb var(--ad-length) linear forwards; }
+  .play .b2 img { animation: kb2 var(--ad-length) linear forwards; }
+  .play .b4 img { animation: kb4 var(--ad-length) linear forwards; }
+  .play .t1 { animation: t1 var(--ad-length) linear forwards; }
+  .play .t2a { animation: t2a var(--ad-length) linear forwards; }
+  .play .t2b { animation: t2b var(--ad-length) linear forwards; }
+  .play .t2c { animation: t2c var(--ad-length) linear forwards; }
+  .play .p3a { animation: p3a var(--ad-length) linear forwards; }
+  .play .p3b { animation: p3b var(--ad-length) linear forwards; }
+  .play .t4 { animation: t4 var(--ad-length) linear forwards; }
+  .play .card { animation: card var(--ad-length) linear forwards; }
+  .play .bar i { animation: bar var(--ad-length) linear forwards; }
+
+  @keyframes b1 { 0% { opacity: 1; } 18% { opacity: 1; } 22% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes b2 { 0% { opacity: 0; } 18% { opacity: 0; } 22% { opacity: 1; } 38% { opacity: 1; } 42% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes b3 { 0% { opacity: 0; } 38% { opacity: 0; } 42% { opacity: 1; } 58% { opacity: 1; } 62% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes b4 { 0% { opacity: 0; } 58% { opacity: 0; } 62% { opacity: 1; } 78% { opacity: 1; } 82% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes b5 { 0% { opacity: 0; } 78% { opacity: 0; } 82% { opacity: 1; } 100% { opacity: 1; } }
+  @keyframes kb  { 0% { transform: scale(1.0); } 22% { transform: scale(1.08); } 100% { transform: scale(1.08); } }
+  @keyframes kb2 { 0% { transform: scale(1.1) translateX(2%); } 18% { transform: scale(1.1) translateX(2%); } 42% { transform: scale(1.02) translateX(-1%); } 100% { transform: scale(1.02) translateX(-1%); } }
+  @keyframes kb4 { 0% { transform: scale(1.0); } 58% { transform: scale(1.0); } 82% { transform: scale(1.1); } 100% { transform: scale(1.1); } }
+  @keyframes t1  { 0% { opacity: 0; translate: 0 1.5cqw; } 4% { opacity: 0; translate: 0 1.5cqw; } 8% { opacity: 1; translate: 0 0; } 18% { opacity: 1; } 21% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes t2a { 0% { opacity: 0; scale: 0.6; } 23% { opacity: 0; scale: 0.6; } 26% { opacity: 1; scale: 1.08; } 28% { scale: 1; } 38% { opacity: 1; } 41% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes t2b { 0% { opacity: 0; scale: 0.6; } 27% { opacity: 0; scale: 0.6; } 30% { opacity: 1; scale: 1.08; } 32% { scale: 1; } 38% { opacity: 1; } 41% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes t2c { 0% { opacity: 0; scale: 0.6; } 31% { opacity: 0; scale: 0.6; } 34% { opacity: 1; scale: 1.08; } 36% { scale: 1; } 38% { opacity: 1; } 41% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes p3a { 0% { opacity: 0; translate: -6cqw 0; } 41% { opacity: 0; translate: -6cqw 0; } 46% { opacity: 1; translate: 0 0; } 58% { opacity: 1; } 61% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes p3b { 0% { opacity: 0; translate: 6cqw 0; } 45% { opacity: 0; translate: 6cqw 0; } 50% { opacity: 1; translate: 0 0; } 58% { opacity: 1; } 61% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes t4  { 0% { opacity: 0; translate: 0 1.5cqw; } 64% { opacity: 0; translate: 0 1.5cqw; } 68% { opacity: 1; translate: 0 0; } 78% { opacity: 1; } 81% { opacity: 0; } 100% { opacity: 0; } }
+  @keyframes card { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); } 81% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); } 86% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); } 89% { transform: translate(-50%, -50%) scale(1); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  @keyframes bar { from { width: 0; } to { width: 100%; } }
+
+  /* at rest (no .play, or reduced motion): show the final card over the title image */
+  .stage:not(.play) .b1, .stage:not(.play) .b5 { opacity: 1; }
+  .stage:not(.play) .t1 { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .play .beat, .play .beat img, .play .t1, .play .t2a, .play .t2b, .play .t2c, .play .p3a, .play .p3b, .play .t4, .play .card, .play .bar i { animation: none !important; }
+    .play .b1, .play .b5, .play .card { opacity: 1; transform: none; }
+    .play .card { transform: translate(-50%, -50%); }
+    .play .t1 { opacity: 0; }
+    .play .bar i { width: 100%; }
+  }
+</style>
+
+<section class="stage play" id="stage" aria-label="Little Monsoon, a 15 second ad">
+  <!-- 1. hook -->
+  <div class="beat b1">
+    <img src="img/title.jpg" alt="Chikki dozing by the campfire at dusk on Manjukere">
+    <div class="shade"></div>
+    <canvas class="flies" id="flies1"></canvas>
+    <p class="line top t1">Seven days. A quiet lake.<br>Nothing to do but be cozy.</p>
+  </div>
+  <!-- 2. camp -->
+  <div class="beat b2">
+    <img src="img/camp.jpg" alt="The camp clearing at golden hour: shop, bamboo, dome tent">
+    <span class="chip t2a" style="left: 8cqw; top: 12cqw;">Pitch a tent</span>
+    <span class="chip t2b" style="left: 24cqw; top: 22cqw;">Forage the jamun thickets</span>
+    <span class="chip t2c" style="left: 14cqw; top: 32cqw;">Hang a lantern</span>
+  </div>
+  <!-- 3. fish and cook -->
+  <div class="beat b3">
+    <img src="img/night.jpg" alt="" aria-hidden="true">
+    <div class="shade"></div>
+    <figure class="polaroid left p3a">
+      <img src="img/fishing.jpg" alt="Chikki fishing from the bamboo jetty with a bobber and a bite">
+      <figcaption>Fish from the jetty</figcaption>
+    </figure>
+    <figure class="polaroid right p3b">
+      <img src="img/cooking.jpg" alt="A new recipe card for Lemongrass Tea over the campfire">
+      <figcaption>Cook by the fire</figcaption>
+    </figure>
+  </div>
+  <!-- 4. the guardian -->
+  <div class="beat b4">
+    <img src="img/guardian.jpg" alt="Bangari, the glowing guardian fish, rising beside the jetty under a moonbow">
+    <canvas class="flies" id="flies4"></canvas>
+    <p class="line bottom t4">On a rainy night, something glows<br>far out on the water.</p>
+  </div>
+  <!-- 5. call to action -->
+  <div class="beat b5">
+    <div class="sky"></div>
+    <img src="img/title.jpg" alt="" aria-hidden="true" style="opacity: 0.55;">
+    <div class="shade"></div>
+    <div class="card">
+      <img src="img/chikki.png" alt="Chikki, a small smiling palm squirrel">
+      <div>
+        <h1>Little Monsoon</h1>
+        <p class="sub">a tiny camping trip</p>
+      </div>
+      <div class="cta">
+        <span class="pill">Coming soon</span>
+        <span class="meta">Browser &middot; iPad &middot; free</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="chrome">
+  <div class="bar" aria-hidden="true"><i></i></div>
+  <button class="replay" id="replay" type="button">Replay</button>
+  <span class="note" id="note">15 s &middot; loops</span>
+</div>
+
+<script>
+  (function () {
+    var stage = document.getElementById('stage');
+    var replay = document.getElementById('replay');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var LENGTH = 15000;
+    var loopTimer = null;
+
+    function restart() {
+      stage.classList.remove('play');
+      void stage.offsetWidth; // flush so the animations restart from 0
+      stage.classList.add('play');
+      if (loopTimer) clearTimeout(loopTimer);
+      if (!reduce) loopTimer = setTimeout(restart, LENGTH + 600);
+    }
+    replay.addEventListener('click', restart);
+    if (location.hash === '#video') document.body.classList.add('video');
+    if (!reduce) loopTimer = setTimeout(restart, LENGTH + 600);
+
+    // fireflies: a soft drifting glow field on beats 1 and 4
+    function fireflies(canvas, count) {
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      var dots = [];
+      function size() {
+        var r = canvas.getBoundingClientRect();
+        canvas.width = Math.max(2, Math.round(r.width));
+        canvas.height = Math.max(2, Math.round(r.height));
+      }
+      size();
+      for (var i = 0; i < count; i++) {
+        dots.push({ x: Math.random(), y: 0.25 + Math.random() * 0.7, r: 2 + Math.random() * 3, p: Math.random() * 6.28, s: 0.4 + Math.random() * 0.8, a: Math.random() * 6.28 });
+      }
+      var last = 0;
+      function frame(t) {
+        if (reduce) { draw(0); return; }
+        if (t - last > 33) { last = t; draw(t / 1000); }
+        requestAnimationFrame(frame);
+      }
+      function draw(time) {
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        for (var i = 0; i < dots.length; i++) {
+          var d = dots[i];
+          var x = (d.x + Math.sin(time * 0.15 * d.s + d.a) * 0.03) * w;
+          var y = (d.y + Math.cos(time * 0.12 * d.s + d.p) * 0.04) * h;
+          var glow = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * 1.4 * d.s + d.p));
+          var rad = d.r * (w / 1920) * 3 + 2;
+          var g = ctx.createRadialGradient(x, y, 0, x, y, rad * 4);
+          g.addColorStop(0, 'rgba(255, 213, 154, ' + (0.9 * glow) + ')');
+          g.addColorStop(0.4, 'rgba(255, 213, 154, ' + (0.35 * glow) + ')');
+          g.addColorStop(1, 'rgba(255, 213, 154, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, rad * 4, 0, 6.28); ctx.fill();
+        }
+      }
+      window.addEventListener('resize', function () { size(); });
+      requestAnimationFrame(frame);
+    }
+    fireflies(document.getElementById('flies1'), 26);
+    fireflies(document.getElementById('flies4'), 34);
+  })();
+</script>
