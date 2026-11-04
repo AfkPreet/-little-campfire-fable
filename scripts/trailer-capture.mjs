@@ -256,7 +256,7 @@ const BEATS = [
     n: 7, start: 36, end: 41, caption: 'Night keeps its own time', world: 'fresh-camp-pitched',
     prep: async () => {
       await muted(closeOverlays);
-      await cinematic({ chrome: false, rings: false });
+      await cinematic({ weather: 'clear', chrome: false, rings: false });
       await api(`api.setDayT(0.68)`);
       await api(`api.scene.clock.fireLitByPlayer = true; api.scene.clock.applyNow()`);
     },
