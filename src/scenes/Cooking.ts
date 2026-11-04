@@ -95,6 +95,13 @@ export class CookingScene extends Phaser.Scene {
     paintDishes(this);
     paintIngredients(this);
 
+    // The HUD stays under this overlay but out of sight: its day label and menu button sat exactly under the close
+    // button. Any exit (Close, Save, a debug stop) restores it through the shutdown hook.
+    if (this.scene.isActive(SCENES.hud)) {
+      this.scene.setVisible(false, SCENES.hud);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { if (this.scene.get(SCENES.hud)) this.scene.setVisible(true, SCENES.hud); });
+    }
+
     const v = viewport();
     this.backdrop = this.add.rectangle(0, 0, v.w * 4, v.h * 4, hexToInt(PALETTE.ink), L.dim).setDepth(L.depth.backdrop).setInteractive();
 

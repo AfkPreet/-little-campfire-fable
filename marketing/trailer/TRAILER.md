@@ -14,7 +14,7 @@ One trip, Day 1 to the guardian. 16:9, 1280x720 captures from the live game, han
 | 6 | 0:29-0:36 | Cooking: ingredients dragged into the kettle, the stir, steam and sizzle, "NEW RECIPE!" | Stir twice | Cook by the fire. Every dish you discover goes in the journal. |
 | 7 | 0:36-0:41 | Time-lapse from golden hour to night over the camp, fire lit, moon path appears | Night keeps its own time | Night comes when it comes. Sleep when you like. |
 | 8 | 0:41-0:46 | Decor at night: a paper lantern glows, the toran flutters, fairy lights twinkle on the tent | Make it yours | Hang a lantern. String some lights. Make the camp yours. |
-| 9 | 0:46-0:51 | Puttu peeks from the thicket, then nibbles a shared dish and wiggles | Something is peeking | Someone shy has been watching you eat. |
+| 9 | 0:46-0:51 | Puttu peeks from the thicket, then nibbles a shared dish and wiggles | Someone shy | Someone shy has been watching you eat. |
 | 10 | 0:51-0:56 | The journal: fish page, recipes page, stamps, a page flip | 36 stamps to find | Thirty-six stamps. Fish, recipes, moments, a friend, and a mystery. |
 | 11 | 0:56-1:01 | A rainy afternoon: rings on the water, Chikki resting in the tent doorway | Rain on the tent is a reward | When it rains, you rest. |
 | 12 | 1:01-1:06 | Dawn after the rain: the rainbow moment with its banner | A rainbow over Manjukere | And sometimes the morning says thank you. |

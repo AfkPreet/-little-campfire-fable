@@ -156,6 +156,9 @@ export function installCampApi(camp: CampScene): CampApi {
         s.weather.kind = kind;
         s.weather.raining = kind === 'rain';
         s.weather.mistBurnedOff = false;
+        // a forced sky stays for the day: no mid-day change rolls over it (the trailer pins Day 1 clear)
+        s.weather.middayRolled = true;
+        s.weather.rainChangedToday = false;
       }, 'debug');
       camp.clock.applyNow();
     },

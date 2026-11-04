@@ -52,7 +52,14 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.
 // ---------- helpers that talk to window.__game.director / api ----------
 const ev = (fn, arg) => page.evaluate(fn, arg);
 /** evaluate a JS expression string in the page; `d` is the director, `api` the camp api, `game` the Phaser game */
-const api = (expr) => ev((e) => { const d = window.__game.director, api = window.__game.api, game = window.__game.game; void d; void api; void game; return eval(e); }, expr);
+// Only plain data crosses the bridge: a Phaser object (a ScenePlugin from scene.launch, a scene from a getter) would be
+// serialized whole and blow Node's string limit (ERR_STRING_TOO_LONG).
+const api = (expr) => ev((e) => {
+  const d = window.__game.director, api = window.__game.api, game = window.__game.game; void d; void api; void game;
+  const r = eval(e);
+  const plain = (v) => v === null || v === undefined || typeof v !== 'object' || Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype;
+  return plain(r) ? r : undefined;
+}, expr);
 const frame = () => ev(() => window.__game.director.frame());
 const caption = (text, holdMs = 0) => ev(([t, h]) => window.__game.director.caption(t, { holdMs: h }), [text, holdMs]);
 const hud = (on) => ev((v) => window.__game.director.hud(v), on);
@@ -285,7 +292,7 @@ const BEATS = [
     run: async (b) => { await stepTo(b.end); },
   },
   {
-    n: 9, start: 46, end: 51, caption: 'Something is peeking', world: 'midtrip-camp',
+    n: 9, start: 46, end: 51, caption: 'Someone shy', world: 'midtrip-camp',
     prep: () => cinematic({ time: 'dusk', weather: 'clear', heroX: LAYOUT.thicket2 - 130, facing: 1, chrome: true }),
     run: async (b) => {
       await act(`api.companionPeek()`);
