@@ -141,7 +141,17 @@ export class AlbumScene extends Phaser.Scene {
     return { x, y, w: ALBUM.w - L.inset.left - L.inset.right, h: ALBUM.h - L.inset.top - L.inset.bottom };
   }
 
-  private turn(dir: 1 | -1): void {
+  /** Debug / trailer capture: show a page at once (negative counts from the end: -1 is the postcard). */
+  jumpTo(index: number): void {
+    const n = this.list.length;
+    const i = Phaser.Math.Clamp(index < 0 ? n + index : index, 0, n - 1);
+    if (i === this.page) return;
+    this.page = i;
+    this.showPage(false);
+  }
+
+  /** Turn a page (arrows, swipes and scripts). */
+  turn(dir: 1 | -1): void {
     if (this.flipping || this.leaving) return;
     const next = this.page + dir;
     if (next < 0 || next >= this.list.length) {

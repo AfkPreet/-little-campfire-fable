@@ -50,6 +50,9 @@ export const FINALE = {
 
 /** stage (debug screenshots): jump straight to that settled beat, then continue at normal pace. */
 export type FinaleStage = 'rise' | 'moonbow';
+/** Progress markers emitted on camp.events as 'finale:stage' (scripts mute/unmute a capture around them). */
+export type FinaleStageName = 'walk' | 'place' | 'glow' | 'rise' | 'risen' | 'nuzzle' | 'eat' | 'eaten' | 'moonbow' | 'sink' | 'done';
+export const FINALE_STAGE_EVENT = 'finale:stage';
 export type FinaleOptions = { skippable: boolean; stage?: FinaleStage };
 
 const running = new WeakSet<CampScene>();
@@ -85,11 +88,15 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
     skipResolve();
   };
 
+  /** beat markers for scripts (trailer capture): camp.events 'finale:stage' */
+  const mark = (name: FinaleStageName): void => { camp.events.emit(FINALE_STAGE_EVENT, name); };
+
   camp.hideActions();
   camp.standUp();
   camp.hooks.onInterrupt?.();
   camp.pauseClock(F.pauseReason);
   setHudChrome(camp, false);
+  mark('walk');
 
   // cinematic framing: stop following the hero and pan toward the guardian's spot
   const cam = camp.worldCam;
@@ -115,6 +122,7 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   else await race(camp.walkHeroTo(F.heroX));
   camp.hero.setFacing(1);
   camp.hero.hold('dish');
+  mark('place');
   await wait(F.beats.placeMs * 0.6);
   const plate = makeOfferingPlate(camp, F.plate.x, F.plate.y);
   camp.landscape.layers.clearingFront.add(plate);
@@ -145,22 +153,28 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   guardian.setMask(maskShape.createGeometryMask());
   camp.landscape.layers.shallows.add(guardian);
   if (!instant) {
+    mark('glow');
     guardian.glowFarOut(true);
     await wait(G.glowMs);
   }
+  mark('rise');
   await race(Promise.all([guardian.rise(instant ? 1 : skipped ? 400 : G.riseMs), soften]));
   camp.hero.setExpression('surprised');
+  mark('risen');
   await wait(F.beats.afterRiseMs);
 
   // 4. a slow blink happens on her own idle; she nuzzles the jetty and eats
   const jettyLocalX = bandLocalX(camp, BAND_SCROLL.shallows, LAYOUT.jetty.x1);
+  mark('nuzzle');
   await race(guardian.nuzzle(jettyLocalX));
   await wait(F.beats.afterNuzzleMs);
   if (!skipped && stage !== 'moonbow') {
+    mark('eat');
     camp.tweens.add({ targets: plate, alpha: 0, duration: 500, ease: 'Sine.easeIn' });
     await race(guardian.eat());
   }
   camp.hero.setExpression('blissful');
+  mark('eaten');
   await wait(F.beats.afterEatMs);
 
   // 5. the clouds part: stars, a moonbow, fireflies swirl
@@ -172,6 +186,7 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   clock.rainOverride = null;
   clock.applyWeatherNow();
   recordMoment('moonbow');
+  mark('moonbow');
   audio.sfx.play('chime');
   const snap = skipped || stage === 'moonbow';
   void showMomentBanner(camp.uiScene(), fill(STRINGS.moments.moonbow), snap);
@@ -180,6 +195,7 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   await (stage === 'moonbow' ? new Promise<void>((r) => camp.time.delayedCall(F.moonbow.holdMs, r)) : wait(F.beats.afterMoonbowMs + (skipped ? 0 : F.moonbow.fadeInMs)));
 
   // 6. she sinks; the gift
+  mark('sink');
   await race(guardian.sink(skipped ? 400 : G.sinkMs));
   await wait(F.beats.afterSinkMs);
   const first = getState().journal.mystery.step < 5;
@@ -211,6 +227,7 @@ export async function runFinale(camp: CampScene, opts: FinaleOptions): Promise<v
   if (rm) { cam.centerOn(camp.hero.x, cam.midPoint.y); refollow(); }
   else cam.pan(camp.hero.x, cam.midPoint.y, F.camera.ms, 'Sine.easeInOut', false, (_c, progress) => { if (progress >= 1) refollow(); });
   camp.resumeClock(F.pauseReason);
+  mark('done');
   camp.events.emit('finale:done', { skipped, first });
   running.delete(camp);
 }

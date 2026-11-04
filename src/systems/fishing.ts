@@ -60,8 +60,8 @@ export const FISHING_FLOW = {
 } as const;
 
 type Phase = 'idle' | 'walking' | 'casting' | 'waiting' | 'bite' | 'reeling' | 'card';
-/** `hold` (debug shots): stay in BITE with the "!" up; no hook timer, no miss. */
-export type CastOpts = { force?: FishId; auto?: boolean; hold?: boolean };
+/** `hold` (debug shots): stay in BITE with the "!" up; no hook timer, no miss. `showCard`: auto casts still open the catch card. */
+export type CastOpts = { force?: FishId; auto?: boolean; hold?: boolean; showCard?: boolean };
 
 const flows = new WeakMap<Phaser.Scene, FishingFlow>();
 export function fishingOf(camp: CampScene): FishingFlow | undefined { return flows.get(camp); }
@@ -344,7 +344,7 @@ export class FishingFlow {
       camp.toast(STRINGS.fishing.letGoToast);
       end();
     };
-    if (opts.auto) { keep(); return; }
+    if (opts.auto && !opts.showCard) { keep(); return; }
     showCatch(camp.uiScene(), {
       name: def.name, sizeCm: cm, rarity: RARITY_STARS[def.rarity] as 1 | 2 | 3, isNew, spriteKey: FISH_KEYS[fishId],
       onKeep: keep, onRelease: release,

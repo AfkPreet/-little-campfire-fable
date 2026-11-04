@@ -16,6 +16,10 @@ import { viewport } from '@/config/layout';
 import { makeText } from '@/ui/text';
 import { STRINGS, fill } from '@/data';
 import { Hero } from '@/entities/Hero';
+import { Button } from '@/ui/Button';
+import { ItemCard } from '@/ui/ItemCard';
+import { TabBar } from '@/ui/TabBar';
+import { initStore, type DebugStateKind } from '@/state';
 
 export type DirectorBegin = { fps?: number; width?: number; height?: number; masterKbps?: number; webKbps?: number };
 
@@ -196,10 +200,93 @@ export class Director {
     this.ensureOverlay();
     this.overlay()?.titleCard(show);
   }
-  /** Show or hide the HUD scene (and its chrome) for cinematic beats. */
+  /**
+   * Show or hide the HUD chrome (buttons, money, day, lantern) for cinematic beats. Toasts, bubbles, banners and
+   * cards drawn on the HUD scene stay visible, so the game's own feedback still shows while the chrome is away.
+   */
   hud(visible: boolean): void {
-    const hud = this.game.scene.getScene('HUD');
-    if (hud) hud.scene.setVisible(visible);
+    const hud = this.game.scene.getScene('HUD') as (Phaser.Scene & { root?: Phaser.GameObjects.Container }) | null;
+    if (!hud) return;
+    if (hud.root) hud.root.setVisible(visible);
+    else hud.scene.setVisible(visible);
+  }
+
+  /** Rebuild the store from a ?state= fixture (fresh | midtrip | finale); scenes read it on their next start. */
+  resetState(kind: DebugStateKind, seed = 7): void {
+    initStore({ debug: kind, seed });
+  }
+
+  /** Stop every running game scene (not this overlay) and start `key`; the caller steps until window.__game.ready. */
+  startScene(key: string, data?: object): void {
+    window.__game.ready = false;
+    for (const s of this.game.scene.getScenes(true)) {
+      const k = s.scene.key;
+      if (k === DIRECTOR.sceneKey || k === 'Boot') continue;
+      s.scene.stop();
+    }
+    this.game.scene.start(key, data);
+    this.ensureOverlay();
+  }
+
+  /** Every Button under the active scenes' display lists (containers included), optionally one scene only. */
+  private buttons(sceneKey?: string): Button[] {
+    const out: Button[] = [];
+    const walk = (list: Phaser.GameObjects.GameObject[]): void => {
+      for (const o of list) {
+        if (o instanceof Button) out.push(o);
+        if (o instanceof Phaser.GameObjects.Container) walk(o.list);
+      }
+    };
+    for (const s of this.game.scene.getScenes(true)) {
+      if (s.scene.key === DIRECTOR.sceneKey) continue;
+      if (sceneKey && s.scene.key !== sceneKey) continue;
+      walk(s.children.list);
+    }
+    return out;
+  }
+  private pressButton(b: Button): void {
+    b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN);
+    b.emit(Phaser.Input.Events.GAMEOBJECT_POINTER_UP);
+  }
+  /** Press the first enabled Button with this label through its own pointer events (the real UI path). */
+  press(label: string, sceneKey?: string): boolean {
+    const b = this.buttons(sceneKey).find((x) => x.label === label && x.isEnabled);
+    if (!b) return false;
+    this.pressButton(b);
+    return true;
+  }
+  /** Labels of the Buttons on screen (for scripts to inspect). */
+  buttonLabels(sceneKey?: string): string[] {
+    return this.buttons(sceneKey).map((b) => b.label);
+  }
+  /** Shop: press the Buy button on the ItemCard for this item id. */
+  pressBuy(itemId: string): boolean {
+    const shop = this.game.scene.getScene('Shop');
+    if (!shop || !shop.scene.isActive()) return false;
+    let card: ItemCard | null = null;
+    const walk = (list: Phaser.GameObjects.GameObject[]): void => {
+      for (const o of list) {
+        if (card) return;
+        if (o instanceof ItemCard && o.itemId === itemId) { card = o; return; }
+        if (o instanceof Phaser.GameObjects.Container) walk(o.list);
+      }
+    };
+    walk(shop.children.list);
+    if (!card) return false;
+    const found: ItemCard = card;
+    const btn = found.content.list.find((o): o is Button => o instanceof Button && o.isEnabled);
+    if (!btn) return false;
+    this.pressButton(btn);
+    return true;
+  }
+  /** Shop: select a tab on its TabBar (the same handler a tap runs). */
+  shopTab(id: string): boolean {
+    const shop = this.game.scene.getScene('Shop');
+    if (!shop || !shop.scene.isActive()) return false;
+    const bar = shop.children.list.find((o): o is TabBar<string> => o instanceof TabBar);
+    if (!bar) return false;
+    bar.select(id);
+    return true;
   }
 
   /** Start an api action without awaiting it; poll isDone(token) while stepping. */

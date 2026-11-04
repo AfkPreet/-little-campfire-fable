@@ -79,6 +79,22 @@ export class StirGesture {
     i.off(Phaser.Input.Events.POINTER_UP_OUTSIDE, this.onUp);
   }
 
+  /**
+   * Debug / trailer capture: finish the stir without a pointer. With `ms` the progress is tweened 0 -> 1 first so the
+   * pot wobbles as it would under a finger; 0 completes at once. No-op unless armed.
+   */
+  complete(ms = 0): void {
+    if (!this.enabled || this.done) return;
+    this.active = true;
+    if (ms <= 0) { this.finish(); return; }
+    const prog = { t: 0 };
+    this.scene.tweens.add({
+      targets: prog, t: 1, duration: ms, ease: 'Sine.easeInOut',
+      onUpdate: () => { if (!this.done) this.opts.onProgress?.(prog.t); },
+      onComplete: () => { if (!this.done) this.finish(); },
+    });
+  }
+
   private target(): number {
     return (this.opts.circles ?? COOKING.stirCircles) * Math.PI * 2;
   }

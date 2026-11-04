@@ -202,7 +202,8 @@ export class JournalScene extends Phaser.Scene {
     this.tweens.add({ targets: this.pages, alpha: 1, duration: L.openMs, ease: 'Sine.easeOut' });
   }
 
-  private selectTab(t: JournalTab): void {
+  /** Switch tabs (the paper tabs call this; scripts drive it too). */
+  selectTab(t: JournalTab): void {
     if (this.flipping) return;
     if (t === this.tab) {
       squash(this, this.tabs[t]!, 0.08);
@@ -215,7 +216,8 @@ export class JournalScene extends Phaser.Scene {
     this.showPage(true, 1);
   }
 
-  private turn(dir: 1 | -1): void {
+  /** Turn a page within the tab (arrows, swipes and scripts). */
+  turn(dir: 1 | -1): void {
     if (this.flipping || !this.opened) return;
     const n = pageCount(this.tab, getState());
     const next = this.page + dir;
@@ -297,7 +299,8 @@ export class JournalScene extends Phaser.Scene {
     this.close();
   }
 
-  private close(): void {
+  /** Close the journal (the close button, Esc and scripts). */
+  close(): void {
     if (this.closing) return;
     this.closing = true;
     audio.sfx.play('tok');

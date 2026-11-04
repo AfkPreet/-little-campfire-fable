@@ -3,11 +3,11 @@
  * (scripts/smoke.mjs drives exactly this surface). Fishing and foraging are reached through their flows.
  */
 import Phaser from 'phaser';
-import type { CampScene } from '@/scenes/Camp';
+import { CAMP, type CampScene } from '@/scenes/Camp';
 import { SCENES } from '@/scenes/Boot';
 import { DEBUG } from '@/config/debug';
 import {
-  addDish, buyGear, canAfford, discoverRecipe, earn, eatDish, getState, markDirty, pitchTent as storePitchTent, recordCook,
+  addDish, addForage, buyGear, canAfford, discoverRecipe, earn, eatDish, getState, markDirty, pitchTent as storePitchTent, recordCook,
   removeFish, removeForage, removePantry, saveNow as storeSaveNow, update, type GameState,
 } from '@/state';
 import { dayTFor, phaseAt } from '@/world/lighting';
@@ -19,8 +19,10 @@ import { LAYOUT } from '@/world/layout';
 import { fishingOf } from '@/systems/fishing';
 import { foragingOf } from '@/systems/foraging';
 import { companionOf } from '@/systems/companionFlow';
-import { applyMysteryStep } from '@/systems/mysteryFlow';
-import { runFinale } from '@/systems/finale';
+import { applyMysteryStep, mysteryOf } from '@/systems/mysteryFlow';
+import { runFinale, FINALE_STAGE_EVENT, type FinaleOptions } from '@/systems/finale';
+import { momentsOf } from '@/systems/moments';
+import type { MomentId } from '@/data/types';
 
 export const CAMP_API = {
   /** auto-continue the DaySummary this long after it opens */
@@ -51,8 +53,8 @@ export interface CampApi {
   buyEssentials(): Record<string, boolean>;
   /** Forage a spot (data or layout id; default: the herb patch, else the first available). Resolves when the items landed. */
   forage(spotId?: string): Promise<{ id: ForageId; n: number } | null>;
-  /** Cast; `force` makes the next bite that species and auto-hooks / keeps. Resolves after Keep. */
-  fish(opts?: { force?: FishId }): Promise<void>;
+  /** Cast; `force` makes the next bite that species and auto-hooks / keeps. `showCard` leaves the catch card up for a real Keep press. Resolves after Keep. */
+  fish(opts?: { force?: FishId; showCard?: boolean }): Promise<void>;
   /** Cook without the overlay: same steps as the Cooking scene. Returns the dish id, or null when ingredients are missing. */
   cook(cookwareId: CookwareId, ingredientIds: IngredientId[]): DishId | null;
   /** Eat the most recently cooked dish; returns the Contentment added, or null. */
@@ -119,6 +121,8 @@ export function cookDirect(cookwareId: CookwareId, ingredientIds: IngredientId[]
 }
 
 export function installCampApi(camp: CampScene): CampApi {
+  let finaleStage: string | null = null;
+  camp.events.on(FINALE_STAGE_EVENT, (name: string) => { finaleStage = name; });
   const api: CampApi = {
     scene: camp,
     walkTo: (x) => camp.walkHeroTo(x),
@@ -174,7 +178,7 @@ export function installCampApi(camp: CampScene): CampApi {
       // scripts run under headless Chromium where game time crawls: skip the walk to the jetty
       camp.hooks.onInterrupt?.();
       camp.hero.setPosition(CAMP_API.castStandX, camp.groundAt(CAMP_API.castStandX));
-      return flow.onWaterTap(t.x, t.y, { force: opts.force, auto: true });
+      return flow.onWaterTap(t.x, t.y, { force: opts.force, auto: true, showCard: opts.showCard });
     },
     cook: (cookwareId, ingredientIds) => cookDirect(cookwareId, ingredientIds),
     eatLastDish: () => {
@@ -190,8 +194,8 @@ export function installCampApi(camp: CampScene): CampApi {
     companionPeek: () => companionOf(camp)?.forcePeek() ?? Promise.resolve(),
     /** Mystery (M3): set the clue step (0-5) with its prerequisite flags. */
     mystery: (step: number) => applyMysteryStep(step),
-    /** Mystery (M3): run the finale now (skippable). */
-    finale: () => runFinale(camp, { skippable: true }),
+    /** Mystery (M3): run the finale now (skippable unless told otherwise; `stage` jumps ahead). */
+    finale: (opts: Partial<FinaleOptions> = {}) => runFinale(camp, { skippable: true, ...opts }),
     buy: (id) => {
       if (getState().inventory.gear[id]) return true;
       const price = GEAR_BY_ID[id].price;
@@ -206,6 +210,56 @@ export function installCampApi(camp: CampScene): CampApi {
     fps: () => camp.game.loop.actualFps,
     particles: () => ({ live: particleBudget.used, max: particleBudget.max }),
     textures: () => Object.keys(camp.textures.list).length,
+    // ---------- trailer capture (scripts/trailer-capture.mjs): the real tap paths, stepped by the director ----------
+    /** Tap an interactable by id through the real path (walk within radius, then onTap or its action bubble). */
+    tap: (id: string): Promise<boolean> => {
+      const i = camp.interactables.get(id);
+      if (!i) return Promise.resolve(false);
+      return camp.interactables.activate(camp, i).then(() => true);
+    },
+    /** Ids of the interactables currently registered. */
+    interactables: (): string[] => camp.interactables.all().map((i) => i.id),
+    /** Set the clock directly (0..1) for time-lapses; the lighting follows at once. */
+    setDayT: (t: number): void => {
+      update((s) => {
+        s.dayT = Phaser.Math.Clamp(t, 0, 1);
+        s.isNight = phaseAt(s.dayT) === 'night';
+      }, 'debug');
+      camp.clock.applyNow();
+    },
+    /** Put forage in the bag (ingredients for a scripted cook). */
+    addForage: (id: ForageId, n = 1): void => { addForage(id, n); markDirty(); },
+    /** Hide the breathing glow rings for cinematic shots (taps still work). */
+    glowRings: (visible: boolean): void => { camp.interactables.ringsVisible = visible; },
+    /** No spontaneous companion peeks while quiet. */
+    companionQuiet: (on: boolean): void => companionOf(camp)?.setQuiet(on),
+    /** Play a rare moment now with its banner (force skips the once-a-day guard). */
+    playMoment: (id: MomentId): Promise<void> => momentsOf(camp)?.play(id, true) ?? Promise.resolve(),
+    /** Mystery clue 1: the far glow, at once. */
+    mysteryGlow: (): Promise<void> => mysteryOf(camp)?.playGlow(true) ?? Promise.resolve(),
+    /** Mystery clue 2: spawn the shore sparkle (tap 'mystery-scale' afterwards). */
+    mysterySparkle: (): void => mysteryOf(camp)?.spawnSparkle(),
+    /** Hero teleport + camera snap (scripts skip long walks). */
+    placeHero: (x: number, facing: 1 | -1 = 1): void => {
+      camp.hooks.onInterrupt?.();
+      camp.standUp();
+      camp.hero.setPosition(x, camp.groundAt(x));
+      camp.hero.setFacing(facing);
+      camp.worldCam.startFollow(camp.hero, true, CAMP.followLerp, CAMP.followLerp);
+      camp.worldCam.centerOn(x, camp.worldCam.midPoint.y);
+    },
+    /** Stop following the hero and pan the camera to world x over ms (Sine.easeInOut). */
+    panTo: (x: number, ms: number): void => {
+      camp.worldCam.stopFollow();
+      camp.worldCam.pan(x, camp.worldCam.midPoint.y, ms, 'Sine.easeInOut');
+    },
+    /** Snap the camera to world x without following. */
+    lookAt: (x: number): void => {
+      camp.worldCam.stopFollow();
+      camp.worldCam.centerOn(x, camp.worldCam.midPoint.y);
+    },
+    /** Last finale stage marker ('walk' ... 'done'), see finale.ts. */
+    finaleStage: (): string | null => finaleStage,
     stayLonger: () => albumPress(camp, STRINGS.album.stayLonger, SCENES.camp),
     newTrip: async () => {
       const opened = await albumPress(camp, STRINGS.album.newTrip, null);

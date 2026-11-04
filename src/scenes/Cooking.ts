@@ -354,6 +354,22 @@ export class CookingScene extends Phaser.Scene {
     return isReduceMotion() || getState().settings.reduceMotion;
   }
 
+  // ---------- debug / trailer capture (the same code paths a finger takes) ----------
+  /** Drop a tray chip into the pot by ingredient id; false when the chip is missing or cannot be dragged. */
+  debugAddIngredient(id: string): boolean {
+    const chip = this.chips.find((c) => c.def.id === id);
+    if (!chip || !this.canDrag(chip)) return false;
+    squash(this, chip.root, 0.12);
+    this.addToPot(chip);
+    return true;
+  }
+  /** Complete the stir gesture (tweened over `ms` so the pot wobbles); false when nothing is armed. */
+  debugStir(ms = 0): boolean {
+    if (this.phase !== 'pick' || !this.stir || this.potItems.length < COOKING.minIngredients) return false;
+    this.stir.complete(ms);
+    return true;
+  }
+
   // ---------- stirring ----------
   private armStir(): void {
     const want = this.phase === 'pick' && this.potItems.length >= COOKING.minIngredients;

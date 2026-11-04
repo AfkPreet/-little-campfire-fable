@@ -73,8 +73,14 @@ export class CompanionFlow {
   private lastTint = '';
   private knownBefriended = false;
   private busy = false;
+  private quiet = false;
 
   constructor(private readonly camp: CampScene) {}
+
+  /** Debug / trailer capture: no spontaneous peeks while quiet (forcePeek and sharing still work). */
+  setQuiet(on: boolean): void {
+    this.quiet = on;
+  }
 
   create(): void {
     this.knownBefriended = getState().journal.companion.befriended;
@@ -121,7 +127,7 @@ export class CompanionFlow {
   }
 
   private checkPeek(): void {
-    if (this.busy || this.mode !== 'none' || this.camp.clockPaused) return;
+    if (this.quiet || this.busy || this.mode !== 'none' || this.camp.clockPaused) return;
     if (this.camp.time.now < this.hideUntil) return;
     if (this.peekConditionsMet()) void this.peek();
   }

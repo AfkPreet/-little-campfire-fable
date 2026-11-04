@@ -56,6 +56,8 @@ export class InteractableManager {
   claimedPointerId: number | null = null;
   /** Interactable tapped this frame, read by the Camp pointerup handler. */
   pending: Interactable | null = null;
+  /** Cinematic captures hide the glow rings (taps still work). */
+  ringsVisible = true;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -110,6 +112,11 @@ export class InteractableManager {
 
   /** Reposition the glow rings onto the nearest interactables within range of (hx, hy). */
   update(hx: number, hy: number): void {
+    if (!this.ringsVisible) {
+      for (const r of this.rings) if (r.visible) r.setVisible(false);
+      this.ringFor.clear();
+      return;
+    }
     const near: Array<{ i: Interactable; d: number }> = [];
     for (const { i } of this.entries.values()) {
       if (i.glow === false) continue;
