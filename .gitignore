@@ -7,3 +7,4 @@ shots/**/*.png
 .DS_Store
 marketing/trailer/checks/
 marketing/trailer/render/test-*.webm
+marketing/trailer/render/beats-*.webm
