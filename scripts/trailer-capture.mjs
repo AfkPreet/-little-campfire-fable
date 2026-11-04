@@ -180,7 +180,7 @@ const LAYOUT = { bamboo: 300, tentSpot1: 760, fire: 1180, thicket1: 420, thicket
 const BEATS = [
   {
     n: 1, start: 0, end: 5, caption: 'Seven days. A quiet lake.', world: 'midtrip-camp',
-    prep: () => cinematic({ time: 'dusk', weather: 'clear', heroX: 700, facing: 1 }),
+    prep: () => cinematic({ time: 'dusk', weather: 'clear', heroX: LAYOUT.fire - 110, facing: 1 }),
     run: async (b) => { await stepTo(b.end); },
   },
   {
@@ -304,7 +304,7 @@ const BEATS = [
   },
   {
     n: 10, start: 51, end: 56, caption: '36 stamps to find', world: 'midtrip-camp',
-    prep: () => cinematic({ time: 'day', chrome: true }),
+    prep: () => cinematic({ time: 'day', weather: 'clear', chrome: true }),
     run: async (b) => {
       await ev(() => { window.__game.ready = false; });
       await api(`api.scene.scene.launch('Journal', { tab: 'fish' })`);
@@ -331,9 +331,9 @@ const BEATS = [
     },
   },
   {
-    n: 12, start: 61, end: 66, caption: 'A rainbow over Manjukere', world: 'midtrip-camp',
+    n: 12, start: 61, end: 66, caption: 'The morning says thank you', world: 'midtrip-camp',
     prep: async () => {
-      await cinematic({ time: 'dawn', weather: 'clear' });
+      await cinematic({ time: 'dawn', weather: 'clear', heroX: LAYOUT.fire - 150, facing: 1 });
       await api(`api.scene.hero.setExpression('happy')`);
     },
     run: async (b) => {
@@ -364,7 +364,7 @@ const BEATS = [
   },
   {
     n: 14, start: 72, end: 84, caption: '', world: 'finale-camp',
-    prep: () => cinematic({ heroX: LAYOUT.jettyEnd - 34 - 70, facing: 1 }),
+    prep: () => cinematic({ time: 'night', weather: 'rain', heroX: LAYOUT.jettyEnd - 34 - 70, facing: 1 }),
     run: async (b) => {
       // the finale is ~40 s; it is trimmed by muting around its stage markers (finale.ts emits 'finale:stage')
       const t = await act(`api.finale({ skippable: false })`);
@@ -392,7 +392,7 @@ const BEATS = [
     },
   },
   {
-    n: 15, start: 84, end: 88, caption: 'Next trip: Mallige Falls', world: 'album',
+    n: 15, start: 84, end: 88, caption: 'Seven days go by fast', world: 'album',
     prep: async () => {},
     run: async (b) => {
       await stepTo(b.start + 0.9); // the cover settles
@@ -403,8 +403,8 @@ const BEATS = [
     },
   },
   {
-    n: 16, start: 88, end: 90, caption: 'Little Monsoon · coming soon', world: 'midtrip-camp',
-    prep: () => cinematic({ time: 'dusk', weather: 'clear', heroX: 700, facing: 1 }),
+    n: 16, start: 88, end: 90, caption: '', world: 'midtrip-camp',
+    prep: () => cinematic({ time: 'dusk', weather: 'clear', heroX: LAYOUT.fire - 110, facing: 1 }),
     run: async (b) => {
       await titleCard(true);
       await stepTo(b.end);

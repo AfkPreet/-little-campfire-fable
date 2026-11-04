@@ -148,7 +148,9 @@ export function installCampApi(camp: CampScene): CampApi {
       update((s) => {
         s.dayT = dayTFor(name);
         s.isNight = phaseAt(s.dayT) === 'night';
+        s.weather.middayRolled = true; // a staged sky stays put
       }, 'debug');
+      momentsOf(camp)?.dismiss(); // a rainbow from the morning has no place in a jumped-to night
       camp.clock.applyNow();
     },
     setWeather: (kind) => {

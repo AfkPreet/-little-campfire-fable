@@ -144,8 +144,9 @@ function buildFish(scene: Scene, root: Phaser.GameObjects.Container, index: numb
       : [fill(STRINGS.journalExtras.when, { When: f.whenLabel }) + ' · ' + fill(STRINGS.journalExtras.rod, { Rod: f.rodLabel })];
     let y = top + 36;
     for (const line of lines) {
-      root.add(makeText(scene, tx, y, line, { size: PAGE.bodySize, weight: 400, wrap, color: PAGE.bodyColor }).setOrigin(0, 0));
-      y += 24;
+      const t = makeText(scene, tx, y, line, { size: PAGE.bodySize, weight: 400, wrap, color: PAGE.bodyColor }).setOrigin(0, 0);
+      root.add(t);
+      y += Math.max(24, t.height + 2); // a long 'When · Rod' line wraps
     }
     root.add(makeText(scene, tx, y + 2, found ? f.flavor : f.hint, { size: PAGE.hintSize, hand: true, wrap, color: PAGE.lockedColor }).setOrigin(0, 0));
     if (found) root.add(stamp(scene, c.x + c.w - 40, c.y + c.h - 36, 0.6));

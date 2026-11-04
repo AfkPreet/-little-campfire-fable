@@ -57,9 +57,9 @@ class DirectorScene extends Phaser.Scene {
       this.captionText = null;
     }
     if (!text) return;
-    const t = makeText(this, DIRECTOR.caption.margin, v.h - DIRECTOR.caption.margin, text, {
-      size: DIRECTOR.caption.size, hand: true, color: PALETTE.cream, shadow: true,
-    }).setOrigin(0, 1).setAlpha(0);
+    const t = makeText(this, v.w / 2, v.h - DIRECTOR.caption.margin, text, {
+      size: DIRECTOR.caption.size, hand: true, color: PALETTE.cream, shadow: true, align: 'center',
+    }).setOrigin(0.5, 1).setAlpha(0);
     this.add.existing(t);
     this.captionText = t;
     this.tweens.add({ targets: t, alpha: 1, duration: fadeMs });
@@ -165,6 +165,9 @@ export class Director {
     for (let i = 0; i < frames; i++) {
       this.virtualNow += delta;
       this.game.step(this.virtualNow, delta);
+      // a scene launched mid-beat (Journal, Cooking) lands above the overlay; keep captions on top
+      const active = this.game.scene.getScenes(true);
+      if (active.length && active[active.length - 1].scene.key !== DIRECTOR.sceneKey && this.overlay()) this.game.scene.bringToTop(DIRECTOR.sceneKey);
       if (!this.muted && this.encoders.length) {
         const ts = Math.round((this.frameIndex * 1_000_000) / this.fps);
         const keyFrame = this.frameIndex % DIRECTOR.keyframeEvery === 0;

@@ -94,6 +94,11 @@ export class JournalScene extends Phaser.Scene {
     this.book.add([this.pages, this.cover]);
 
     this.closeBtn = new Button(this, 0, 0, '', () => this.close(), { kind: 'icon', icon: TEX.close }).setDepth(L.depth.ui);
+    // The HUD stays under the book but out of sight: its money label sat under the close button. Restored on shutdown.
+    if (this.scene.isActive(SCENES.hud)) {
+      this.scene.setVisible(false, SCENES.hud);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { if (this.scene.get(SCENES.hud)) this.scene.setVisible(true, SCENES.hud); });
+    }
 
     const requested = parseTab(this.launchData.tab ?? DEBUG.tab);
     this.tab = requested ?? lastTab;

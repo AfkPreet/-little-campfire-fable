@@ -43,6 +43,8 @@ export class MomentsFlow {
   private swirl: FirefliesHandle | null = null;
   /** debug: start visuals settled */
   private instant = false;
+  /** cut callbacks for arcs still up (debug time jumps dismiss them) */
+  private transient: Array<() => void> = [];
   /** ?moment= to play as soon as the HUD runs (screenshots) */
   private debugPending: MomentId | null = null;
 
@@ -185,6 +187,11 @@ export class MomentsFlow {
     });
   }
 
+  /** Debug / capture: cut any arc still up (a time jump should not leave a rainbow in the night sky). */
+  dismiss(): void {
+    for (const cut of this.transient.splice(0)) cut();
+  }
+
   /** A soft 6-band arc over the far ridges fading in for 8 s, holding, then fading out. */
   private arc(kind: 'rainbow' | 'moonbow'): void {
     const camp = this.camp;
@@ -196,11 +203,18 @@ export class MomentsFlow {
     const onViewport = (): void => { im.setX(viewport().w / 2); };
     camp.game.events.on('viewport', onViewport);
     const rm = isReduceMotion();
-    const gone = (): void => { camp.game.events.off('viewport', onViewport); im.destroy(); };
+    let hold: Phaser.Time.TimerEvent | null = null;
+    const gone = (): void => {
+      camp.game.events.off('viewport', onViewport);
+      if (im.active) im.destroy();
+      this.transient = this.transient.filter((c) => c !== cut);
+    };
+    const cut = (): void => { hold?.remove(false); camp.tweens.killTweensOf(im); gone(); };
+    this.transient.push(cut);
     if (this.instant) im.setAlpha(1);
     camp.tweens.add({
       targets: im, alpha: 1, duration: this.instant ? 0 : rm ? 600 : A.fadeInMs, ease: 'Sine.easeInOut',
-      onComplete: () => camp.time.delayedCall(A.holdMs, () => camp.tweens.add({ targets: im, alpha: 0, duration: A.fadeOutMs, ease: 'Sine.easeInOut', onComplete: gone })),
+      onComplete: () => { hold = camp.time.delayedCall(A.holdMs, () => camp.tweens.add({ targets: im, alpha: 0, duration: A.fadeOutMs, ease: 'Sine.easeInOut', onComplete: gone })); },
     });
   }
 

@@ -49,7 +49,7 @@ export const MYSTERY_FLOW = {
     hit: { w: 64, h: 72 },
     radius: 56,
   },
-  scaleCard: { w: 340, h: 330, iconY: -70, iconScale: 1.3, titleY: 22, bodyY: 56, bodySize: 16, titleSize: 30 },
+  scaleCard: { w: 340, h: 360, iconY: -82, iconScale: 1.3, titleY: 10, bodyY: 44, bodySize: 16, titleSize: 30 },
   /** clue 3: the shop legend */
   legend: { delayMs: 900, zoneDepth: 900, hintSize: 16, hintPulseMs: 1200, cardW: 430, cardH: 400, cardY: -32, cardScale: 0.92 },
   /** clue 5: the offering spot at the jetty end */

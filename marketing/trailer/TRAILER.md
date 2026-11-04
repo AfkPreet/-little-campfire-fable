@@ -17,11 +17,11 @@ One trip, Day 1 to the guardian. 16:9, 1280x720 captures from the live game, han
 | 9 | 0:46-0:51 | Puttu peeks from the thicket, then nibbles a shared dish and wiggles | Someone shy | Someone shy has been watching you eat. |
 | 10 | 0:51-0:56 | The journal: fish page, recipes page, stamps, a page flip | 36 stamps to find | Thirty-six stamps. Fish, recipes, moments, a friend, and a mystery. |
 | 11 | 0:56-1:01 | A rainy afternoon: rings on the water, Chikki resting in the tent doorway | Rain on the tent is a reward | When it rains, you rest. |
-| 12 | 1:01-1:06 | Dawn after the rain: the rainbow moment with its banner | A rainbow over Manjukere | And sometimes the morning says thank you. |
+| 12 | 1:01-1:06 | Dawn after the rain: the rainbow moment with its banner | The morning says thank you | And sometimes the morning says thank you. |
 | 13 | 1:06-1:12 | Night one: a faint glow far out on the water; the next dawn, a sparkle on the shore, the Glimmering Scale card | Too big for any fish I know | On the first night there was a glow, far out on the water. And in the morning, a scale too big for any fish. |
 | 14 | 1:12-1:24 | The finale, trimmed: the offering at the jetty, Bangari rises, slow blink, eats, the moonbow | (none) | On a rainy night, if you are truly content, carry the dumplings to the jetty. |
-| 15 | 1:24-1:28 | The album's last page: the Mallige Falls postcard | Next trip: Mallige Falls | Seven days go by faster than you think. |
-| 16 | 1:28-1:30 | Title card over the dusk camp: Little Monsoon, a tiny camping trip, coming soon | Little Monsoon · coming soon | Little Monsoon. A tiny camping trip. Coming soon. |
+| 15 | 1:24-1:28 | The album's last page: the Mallige Falls postcard | Seven days go by fast | Seven days go by faster than you think. |
+| 16 | 1:28-1:30 | Title card over the dusk camp: Little Monsoon, a tiny camping trip, coming soon | (none: the title card carries it) | Little Monsoon. A tiny camping trip. Coming soon. |
 
 Caption rules: Patrick Hand, cream with an ink shadow, bottom-left, one line, fades in 300 ms after the beat starts and out 300 ms before it ends. No caption during the finale; the moonbow banner is the game's own.
 
