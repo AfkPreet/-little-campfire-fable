@@ -50,6 +50,19 @@ Voice: a gentle, unhurried adult, a slight smile in it, like reading to someone 
 
 Use `music_day.mp3` from `MUSIC_BRIEF.md` for 0:00-0:36, cross to `music_night.mp3` at 0:36, and `finale.mp3` from 1:12 to the end. Duck the music 6 dB under the voice.
 
+## Sound: laying it under the picture
+
+`npm run trailer:audio` mixes whatever is in `marketing/trailer/audio/` under the finished renders and keeps the silent ones as `*-silent.webm`:
+
+| File | Placement |
+| --- | --- |
+| `music-day.mp3` (38 s) | 0:00-0:38, crossfades into the night cue over 0:36-0:38 |
+| `music-night.mp3` (38 s) | 0:36-1:14, crossfades into the finale over 1:12-1:14 |
+| `music-finale.mp3` (20 s) | 1:12-1:30, fades out over the last two seconds |
+| `vo-01.mp3` .. `vo-16.mp3` | one line per beat at the beat's start, silence trimmed; a line is pushed later when the previous one overruns, and the last lines are pulled earlier so the read ends before the picture; music ducks 6 dB under each line |
+
+Any of mp3, wav or ogg works; a missing file is skipped, so music alone is fine. The mix is rendered offline in headless Chromium, encoded to Opus and stream-copied under the VP9 video with ffmpeg (Playwright's bundled one is found automatically; set `FFMPEG=` otherwise). `--test` lays a synthetic bed to check the chain. Trailer-length cue prompts: the three brief prompts above with the length changed and the loop rules dropped; the finale swells over eight seconds instead of twenty.
+
 ## Files
 
 - `npm run trailer:capture` renders the whole trailer in one pass (about 7 minutes headless): 2700 frames at 30 fps from the live game, two encodes.

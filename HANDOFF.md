@@ -45,6 +45,7 @@ npm run ad:render      # 15 s ad page → marketing/ad/render/*.webm
 npm run trailer:capture        # 90 s trailer from live play → marketing/trailer/render/*.webm (about 7 min)
 npm run trailer:capture -- --beats=5,6   # render a few beats only (beats-5,6-*.webm)
 npm run trailer:capture -- --verify --at=8,49.5   # seek stills from the finished web file → marketing/trailer/checks/verify-*.png
+npm run trailer:audio [-- --test]        # mix marketing/trailer/audio/* (music cues, vo-NN) under the renders; --test proves the chain
 ```
 
 Marketing: the 15 s ad is published at https://claude.ai/artifact/8xFbn5sGdKSeo2ATGcTWYv and the 90 s trailer player at https://claude.ai/artifact/7XUyoTwSkBaj9TbCXzQu1v (both private until shared). Beat sheet, voice-over script and music cues: `marketing/trailer/TRAILER.md`.

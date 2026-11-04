@@ -16,7 +16,8 @@
     "check:data": "node scripts/check-data.mjs",
     "icons": "node scripts/icons.mjs",
     "ad:render": "node scripts/ad-render.mjs",
-    "trailer:capture": "node scripts/trailer-capture.mjs"
+    "trailer:capture": "node scripts/trailer-capture.mjs",
+    "trailer:audio": "node scripts/trailer-audio.mjs"
   },
   "dependencies": {
     "@fontsource/baloo-2": "5.3.0",
