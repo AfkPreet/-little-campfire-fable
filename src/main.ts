@@ -26,6 +26,7 @@ declare global {
       game?: Phaser.Game;
       scene?: string;
       errors: string[];
+      director?: unknown;
       /** set by the HUD on pointerdown over one of its elements; cleared after one frame (Camp ignores taps while set) */
       hudPressed?: boolean;
       [k: string]: unknown;
@@ -49,6 +50,7 @@ const game = new Phaser.Game({
   antialiasGL: true,
   pixelArt: false,
   roundPixels: false,
+  render: { preserveDrawingBuffer: DEBUG.director },
   powerPreference: 'high-performance',
   scale: {
     mode: Phaser.Scale.FIT,

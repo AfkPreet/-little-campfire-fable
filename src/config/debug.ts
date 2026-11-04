@@ -34,6 +34,8 @@ export const DEBUG = {
   finale: params.get('finale') ?? undefined,
   /** Freeze all animation time at a fixed value (screenshots): ?freeze=1 */
   freeze: params.get('freeze') === '1',
+  /** Offline frame-stepping capture for trailers (src/systems/director.ts). */
+  director: params.get('director') === '1',
   /** Skip the audio-unlock gate and title (headless scripts). */
   noAudio: params.get('noaudio') === '1',
   /** Fishing (M4 shots): ?bite=1 puts the flow into BITE at once with the "!" up; ?catch=1 opens the catch card for a minnow. */

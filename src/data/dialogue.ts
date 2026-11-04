@@ -130,6 +130,11 @@ export const STRINGS = {
     stayUp: 'Stay up a bit',
   },
 
+  /** Trailer director overlay (?director=1). */
+  trailer: {
+    comingSoon: 'Coming soon',
+  },
+
   /** Camp shell (M1 Camp scene): strings the spec implies but does not word. */
   campShell: {
     needTent: "You'll need a tent for that. {Shopkeeper}'s shop has one!",

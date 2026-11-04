@@ -3,6 +3,7 @@
  * the UI->audio glue and (in dev) the data validation report. Then the ?scene= target or the Title.
  */
 import Phaser from 'phaser';
+import { installDirector } from '@/systems/director';
 import { DEBUG, trackScenes } from '@/config/debug';
 import { PALETTE, hexToInt } from '@/config/palette';
 import { applyViewport, viewport } from '@/config/layout';
@@ -84,6 +85,7 @@ export class BootScene extends Phaser.Scene {
         initStore({ debug, seed: DEBUG.seed, day: DEBUG.day });
         trackScenes(this.game);
         installAutosave(window);
+        if (DEBUG.director) installDirector(this.game);
         if (!DEBUG.noAudio) audio.unlockOnFirstGesture(window);
         installAudioGlue();
         applySettings();
