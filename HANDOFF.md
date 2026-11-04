@@ -50,7 +50,6 @@ npm run trailer:capture -- --verify --at=8,49.5   # seek stills from the finishe
 Marketing: the 15 s ad is published at https://claude.ai/artifact/8xFbn5sGdKSeo2ATGcTWYv and the 90 s trailer player at https://claude.ai/artifact/7XUyoTwSkBaj9TbCXzQu1v (both private until shared). Beat sheet, voice-over script and music cues: `marketing/trailer/TRAILER.md`.
 
 ```
-```
 
 Debug URL params: `?debug=1&scene=camp&state=fresh|midtrip|finale&time=dawn|day|golden|dusk|night&weather=clear|rain|mist&day=3&seed=7&freeze=1&noaudio=1&board=...&tab=fish&page=last&decor=1&peek=1&mystery=2&finale=rise|moonbow&bite=1&catch=1&cooked=herb_tea&moment=rainbow`. `window.__game.api` has `buyEssentials, pitchTent, forage, fish, cook, eatLastDish, sleep, saveNow, state, mystery, finale, companionPeek, fps` and more (see `src/systems/campApi.ts`).
 
