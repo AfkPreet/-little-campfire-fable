@@ -4,7 +4,8 @@
 // marketing/trailer/render/*.webm and marketing/trailer/checks/beat-NN.png (one per beat, at its midpoint).
 //   --test        4 s proof (dusk camp + caption, then the title card) -> render/test-*.webm
 //   --beats=2,3   render only those beats, each from its own freshly built state -> render/beats-*.webm
-//   --verify      open the finished web WebM in a Playwright <video>, seek to 0:08 / 0:32 / 1:18 / 1:29 and save
+//   --verify      open the finished web WebM in a Playwright <video>, seek to 0:08 / 0:32 / 1:18 / 1:29 (or --at=47,49.5)
+//                 and save
 //                 checks/verify-*.png (ffmpeg here cannot decode VP9; the browser can)
 // Cross-platform: pure Node + Playwright.
 import { createServer } from 'vite';
@@ -20,6 +21,8 @@ const TEST = args.includes('--test');
 const VERIFY = args.includes('--verify');
 const beatsArg = args.find((a) => a.startsWith('--beats='));
 const ONLY = beatsArg ? new Set(beatsArg.slice('--beats='.length).split(',').map((s) => Number(s)).filter((n) => n > 0)) : null;
+const atArg = args.find((a) => a.startsWith('--at='));
+const AT = atArg ? atArg.slice('--at='.length).split(',').map((s) => Number(s)).filter((n) => Number.isFinite(n) && n >= 0) : null;
 const PORT = 5191;
 const FPS = 30;
 const W = 1280, H = 720;
@@ -472,7 +475,7 @@ process.exit(failed ? 1 : 0);
 
 // ---------- --verify: decode the finished WebM in a browser and save stills ----------
 async function verify(videoPath) {
-  const stamps = [8, 32, 78, 89];
+  const stamps = AT && AT.length ? AT : [8, 32, 78, 89];
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: W, height: H } });
   const html = `<!doctype html><html><body style="margin:0;background:#000"><video id="v" src="${pathToFileURL(videoPath).href}" width="${W}" height="${H}" muted preload="auto"></video></body></html>`;
@@ -494,7 +497,7 @@ async function verify(videoPath) {
       v.currentTime = sec;
     }), t);
     await p.waitForTimeout(150);
-    const name = `verify-${String(Math.floor(t / 60))}m${String(t % 60).padStart(2, '0')}s.png`;
+    const name = `verify-${String(Math.floor(t / 60))}m${String((t % 60).toFixed(1).replace(/\.0$/, '')).padStart(2, '0')}s.png`;
     await p.locator('#v').screenshot({ path: path.join(checkDir, name) });
     console.log(`[verify] ${fmt(t)} -> marketing/trailer/checks/${name}`);
   }
