@@ -219,10 +219,12 @@ export class Director {
   /** Stop every running game scene (not this overlay) and start `key`; the caller steps until window.__game.ready. */
   startScene(key: string, data?: object): void {
     window.__game.ready = false;
+    // Use the manager's synchronous stop/start: ScenePlugin#stop queues while SceneManager#start runs at once, and
+    // mixing them restarted the scene immediately only for the queued stop to kill it on the next step.
     for (const s of this.game.scene.getScenes(true)) {
       const k = s.scene.key;
-      if (k === DIRECTOR.sceneKey || k === 'Boot') continue;
-      s.scene.stop();
+      if (k === DIRECTOR.sceneKey || k === 'Boot' || k === key) continue;
+      this.game.scene.stop(k);
     }
     this.game.scene.start(key, data);
     this.ensureOverlay();
