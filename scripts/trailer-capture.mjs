@@ -184,7 +184,7 @@ const BEATS = [
     run: async (b) => { await stepTo(b.end); },
   },
   {
-    n: 2, start: 5, end: 11, caption: "Doddamma's General Store", world: 'shop-fresh',
+    n: 2, start: 5, end: 11, caption: '', world: 'shop-fresh',
     prep: async () => {},
     run: async (b) => {
       await stepTo(b.start + 1.0); // the greeting

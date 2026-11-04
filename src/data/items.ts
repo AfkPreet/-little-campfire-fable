@@ -34,7 +34,7 @@ export const RODS: readonly RodGear[] = [
   },
   {
     id: 'rod_willow', kind: 'rod', tab: 'fishing', name: 'Cane Rod', price: 80,
-    flavor: 'Bends like good cane in the breeze; the big ones can\'t shake it.',
+    flavor: 'Bends like good cane; the big ones can\'t shake it.',
     effect: 'Bite window 1.9 s; catches Cane Rod+ fish',
     tier: 2, biteWindowMs: 1900, rareMultiplier: 1, glowsAtNight: false,
   },

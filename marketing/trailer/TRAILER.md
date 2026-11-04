@@ -7,7 +7,7 @@ One trip, Day 1 to the guardian. 16:9, 1280x720 captures from the live game, han
 | # | Time | Footage (live capture unless noted) | Caption (on screen) | Voice-over |
 | --- | --- | --- | --- | --- |
 | 1 | 0:00-0:05 | The camp at dusk, fireflies rising from the bamboo (hero idle by the fire) | Seven days. A quiet lake. | Seven days at a quiet lake in the hills. |
-| 2 | 0:05-0:11 | Doddamma's shop: the greeting, then buying the tent, the rod and the kettle (the cards squash, the money ticks down) | Doddamma's General Store | First, a stop at the shop. A tent, a rod, something to cook in. The rest is just nice to have. |
+| 2 | 0:05-0:11 | Doddamma's shop: the greeting, then buying the tent, the rod and the kettle (the cards squash, the money ticks down) | (none: the shop sign carries it) | First, a stop at the shop. A tent, a rod, something to cook in. The rest is just nice to have. |
 | 3 | 0:11-0:17 | Chikki walks to the clearing, taps a spot, taps the four pegs, the tent springs up | Home sweet home | Pick a spot. Tap the pegs. Home sweet home. |
 | 4 | 0:17-0:22 | Foraging the jamun thicket; berries arc into the bag with a sparkle trail | Jamun, mushrooms, lemongrass | The clearing is full of small things worth picking. |
 | 5 | 0:22-0:29 | Fishing from the jetty: the cast, the bobber, the "!", the reel, the catch card | Tap when it bites | Cast off the jetty, wait for the nibble, and tap when it bites. |
