@@ -1,0 +1,110 @@
+<title>Little Monsoon Trailer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Patrick+Hand&display=swap">
+<style>
+  /* Layout: one 16:9 player with the beat list under it as chapter chips; the voice-over script folds out below. */
+  :root {
+    --cream: #F6EFE6;
+    --ink: #4A4250;
+    --rose: #D9A0A6;
+    --butter: #F2DFA7;
+    --lavender: #B9AACB;
+    --night: #2F3558;
+    --page: #EFE6DA;
+    --page-fg: #4A4250;
+    --muted: #8A7F8C;
+    --chip: #FFFFFF;
+    --chip-border: #E2D5C2;
+    --font-display: "Baloo 2", "Nunito", "Trebuchet MS", sans-serif;
+    --font-hand: "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page: #2A2538; --page-fg: #F6EFE6; --muted: #B9AACB; --chip: #36304A; --chip-border: #4A4260; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --page: #2A2538; --page-fg: #F6EFE6; --muted: #B9AACB; --chip: #36304A; --chip-border: #4A4260; color-scheme: dark; }
+
+  body {
+    background: var(--page); color: var(--page-fg); font-family: var(--font-display);
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    padding-block: 18px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box; min-height: 100%;
+  }
+  .wrap { width: min(100%, 1280px); display: flex; flex-direction: column; gap: 16px; }
+  h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); font-weight: 700; line-height: 1.1; text-wrap: balance; }
+  h1 small { display: block; font-family: var(--font-hand); font-weight: 400; font-size: 0.7em; color: var(--muted); }
+  .player { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: var(--night); border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(74, 66, 80, 0.25); }
+  .player video { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .player .poster { position: absolute; inset: 0; display: grid; place-items: center; color: var(--cream); font-family: var(--font-hand); font-size: clamp(18px, 2.6vw, 30px); background: rgba(47, 53, 88, 0.45); pointer-events: none; }
+  .player.playing .poster { display: none; }
+  .chapters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chapters button {
+    font: 600 14px var(--font-display); color: var(--page-fg); background: var(--chip);
+    border: 1.5px solid var(--chip-border); border-radius: 22px; padding: 10px 14px; min-height: 44px; cursor: pointer;
+  }
+  .chapters button:hover { border-color: var(--rose); }
+  .chapters button:focus-visible { outline: 3px solid var(--rose); outline-offset: 2px; }
+  .chapters button .t { font-variant-numeric: tabular-nums; color: var(--muted); margin-right: 6px; }
+  details { border: 1.5px solid var(--chip-border); border-radius: 14px; padding: 12px 16px; background: var(--chip); }
+  summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+  .vo { font-family: var(--font-hand); font-size: 20px; line-height: 1.5; max-width: 65ch; margin: 8px 0 0; }
+  .vo b { font-family: var(--font-display); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  .note { color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="wrap">
+  <h1>Little Monsoon <small>one trip in ninety seconds</small></h1>
+  <div class="player" id="player">
+    <video id="v" playsinline preload="metadata" src="TRAILER_SRC" poster=""></video>
+    <div class="poster">Tap to play &middot; 1:30, silent (voice-over and music go under the MP4)</div>
+  </div>
+  <div class="chapters" id="chapters" aria-label="Beats"></div>
+  <details>
+    <summary>Voice-over script</summary>
+    <p class="vo" id="vo"></p>
+  </details>
+  <p class="note">Captions are burned into the video. The master WebM and the beat sheet live in the repository under <code>marketing/trailer/</code>.</p>
+</div>
+
+<script>
+  (function () {
+    var beats = [
+      [0, 'A quiet lake', 'Seven days at a quiet lake in the hills.'],
+      [5, 'The shop', 'First, a stop at the shop. A tent, a rod, something to cook in. The rest is just nice to have.'],
+      [11, 'Pitch the tent', 'Pick a spot. Tap the pegs. Home sweet home.'],
+      [17, 'Forage', 'The clearing is full of small things worth picking.'],
+      [22, 'Fish', 'Cast off the jetty, wait for the nibble, and tap when it bites.'],
+      [29, 'Cook', 'Cook by the fire. Every dish you discover goes in the journal.'],
+      [36, 'Night falls', 'Night comes when it comes. Sleep when you like.'],
+      [41, 'Decorate', 'Hang a lantern. String some lights. Make the camp yours.'],
+      [46, 'Puttu', 'Someone shy has been watching you eat.'],
+      [51, 'The journal', 'Thirty-six stamps. Fish, recipes, moments, a friend, and a mystery.'],
+      [56, 'Rain', 'When it rains, you rest.'],
+      [61, 'A rainbow', 'And sometimes the morning says thank you.'],
+      [66, 'The glow', 'On the first night there was a glow, far out on the water. And in the morning, a scale too big for any fish.'],
+      [72, 'The guardian', 'On a rainy night, if you are truly content, carry the dumplings to the jetty.'],
+      [84, 'Next trip', 'Seven days go by faster than you think.'],
+      [88, 'Coming soon', 'Little Monsoon. A tiny camping trip. Coming soon.']
+    ];
+    var v = document.getElementById('v');
+    var player = document.getElementById('player');
+    var chapters = document.getElementById('chapters');
+    var vo = document.getElementById('vo');
+    var mm = function (s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    beats.forEach(function (b) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="t">' + mm(b[0]) + '</span>' + b[1];
+      btn.addEventListener('click', function () { v.currentTime = b[0]; v.play().catch(function () {}); });
+      chapters.appendChild(btn);
+      var line = document.createElement('span');
+      line.innerHTML = '<b>' + mm(b[0]) + '</b>' + b[2] + '<br>';
+      vo.appendChild(line);
+    });
+    player.addEventListener('click', function () { if (v.paused) v.play().catch(function () {}); else v.pause(); });
+    v.addEventListener('play', function () { player.classList.add('playing'); });
+    v.addEventListener('pause', function () { if (v.ended || v.currentTime === 0) player.classList.remove('playing'); });
+    v.addEventListener('ended', function () { player.classList.remove('playing'); });
+  })();
+</script>
