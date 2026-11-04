@@ -5,3 +5,5 @@ shots/**/*.png
 !shots/**/.gitkeep
 *.log
 .DS_Store
+marketing/trailer/checks/
+marketing/trailer/render/test-*.webm
