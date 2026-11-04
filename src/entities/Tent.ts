@@ -48,7 +48,7 @@ export class Tent extends Phaser.GameObjects.Container {
     const P = this.rig.parts;
     this.shell = [P.poles, P.canopy, P.door, ...(P.window ? [P.window] : []), ...(P.windowGlow ? [P.windowGlow] : [])];
     this.setData('baseScale', 1);
-    this.setData('sortY', y - 1); // behind the hero at the door and whoever walks past
+    this.setData('sortBias', -1); // behind the hero at the door and whoever walks past
     scene.add.existing(this);
   }
 

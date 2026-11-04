@@ -539,7 +539,7 @@ export class Landscape {
     this.layers.actors.add(obj);
     this.sortActors();
   }
-  /** Depth-sort the actor layer by y, or by a 'sortY' data override (the tent sits behind whoever stands at its door). */
+  /** Depth-sort the actor layer by y plus each object's 'sortBias' (the tent sits behind whoever stands at its door). */
   sortActors(): void {
     this.layers.actors.sort('y', (a: Phaser.GameObjects.GameObject & { y?: number }, b: Phaser.GameObjects.GameObject & { y?: number }) => sortYOf(a) - sortYOf(b));
   }
@@ -753,8 +753,8 @@ export class Landscape {
   }
 }
 
-/** The actor layer's sort key: a 'sortY' data override, else y. */
+/** The actor layer's sort key: y plus a 'sortBias' data nudge (the tent sits behind, the companion in front, at a shared ground line). */
 function sortYOf(o: Phaser.GameObjects.GameObject & { y?: number }): number {
-  const over = o.getData('sortY') as number | undefined;
-  return over ?? o.y ?? 0;
+  const bias = (o.getData('sortBias') as number | undefined) ?? 0;
+  return (o.y ?? 0) + bias;
 }

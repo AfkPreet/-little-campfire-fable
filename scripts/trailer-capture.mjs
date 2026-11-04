@@ -61,7 +61,7 @@ const api = (expr) => ev((e) => {
   return plain(r) ? r : undefined;
 }, expr);
 const frame = () => ev(() => window.__game.director.frame());
-const caption = (text, holdMs = 0) => ev(([t, h]) => window.__game.director.caption(t, { holdMs: h }), [text, holdMs]);
+const caption = (text, holdMs = 0, at = 'bottom') => ev(([t, h, a]) => window.__game.director.caption(t, { holdMs: h, at: a }), [text, holdMs, at]);
 const hud = (on) => ev((v) => window.__game.director.hud(v), on);
 const titleCard = (on) => ev((v) => window.__game.director.titleCard(v), on);
 const mute = (on) => ev((v) => window.__game.director.mute(v), on);
@@ -242,7 +242,7 @@ const BEATS = [
     },
   },
   {
-    n: 6, start: 29, end: 36, caption: 'Stir twice', world: 'fresh-camp-pitched',
+    n: 6, start: 29, end: 36, caption: 'Stir twice', captionAt: 'left', world: 'fresh-camp-pitched', // the basket panel owns the bottom centre
     prep: async () => {
       await cinematic({ weather: 'clear', heroX: LAYOUT.fire - 70, chrome: true, rings: true });
       if ((await api(`api.state().inventory.forage.herbs`)) < 1) await api(`api.addForage('herbs', 2)`);
@@ -303,7 +303,7 @@ const BEATS = [
     },
   },
   {
-    n: 10, start: 51, end: 56, caption: '36 stamps to find', world: 'midtrip-camp',
+    n: 10, start: 51, end: 56, caption: '36 stamps to find', captionAt: 'top', world: 'midtrip-camp', // above the book
     prep: () => cinematic({ time: 'day', weather: 'clear', chrome: true }),
     run: async (b) => {
       await ev(() => { window.__game.ready = false; });
@@ -419,7 +419,7 @@ async function playBeat(b) {
   else await holdUntil(b.start);
   const beatMs = (b.end - b.start) * 1000;
   pending = { frame: targetFrame((b.start + b.end) / 2), name: `beat-${String(b.n).padStart(2, '0')}` };
-  if (b.caption) await caption(b.caption, beatMs - 300); // in over 300 ms, out 300 ms before the end
+  if (b.caption) await caption(b.caption, beatMs - 300, b.captionAt); // in over 300 ms, out 300 ms before the end
   const f0 = await frame();
   await b.run(b);
   if (pending) { const p = pending; pending = null; await check(p.name); }

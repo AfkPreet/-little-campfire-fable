@@ -29,10 +29,12 @@ type WebmTarget = { buffer: ArrayBuffer | null };
 
 const DIRECTOR = {
   sceneKey: 'Director',
-  caption: { size: 34, margin: 40, fadeMs: 300 },
+  caption: { size: 34, margin: 30, fadeMs: 300 },
   keyframeEvery: 60,
   card: { w: 560, h: 250, radius: 40, heroScale: 1.15 },
 } as const;
+
+export type CaptionAt = 'bottom' | 'left' | 'top';
 
 /** The always-on-top overlay scene: captions and the title card are drawn inside the game canvas. */
 class DirectorScene extends Phaser.Scene {
@@ -49,7 +51,8 @@ class DirectorScene extends Phaser.Scene {
     this.cameras.main.centerOn(v.w / 2, v.h / 2);
   }
 
-  caption(text: string, holdMs = 0, fadeMs: number = DIRECTOR.caption.fadeMs): void {
+  /** `at`: bottom centre like a subtitle (default), bottom left, or top centre, whichever the beat's own UI leaves free. */
+  caption(text: string, holdMs = 0, fadeMs: number = DIRECTOR.caption.fadeMs, at: CaptionAt = 'bottom'): void {
     const v = viewport();
     const old = this.captionText;
     if (old) {
@@ -57,9 +60,11 @@ class DirectorScene extends Phaser.Scene {
       this.captionText = null;
     }
     if (!text) return;
-    const t = makeText(this, v.w / 2, v.h - DIRECTOR.caption.margin, text, {
-      size: DIRECTOR.caption.size, hand: true, color: PALETTE.cream, shadow: true, align: 'center',
-    }).setOrigin(0.5, 1).setAlpha(0);
+    const m = DIRECTOR.caption.margin;
+    const pos = at === 'left' ? { x: m, y: v.h - m, ox: 0, oy: 1 } : at === 'top' ? { x: v.w / 2, y: m / 2, ox: 0.5, oy: 0 } : { x: v.w / 2, y: v.h - m, ox: 0.5, oy: 1 };
+    const t = makeText(this, pos.x, pos.y, text, {
+      size: DIRECTOR.caption.size, hand: true, color: PALETTE.cream, shadow: true, align: at === 'left' ? 'left' : 'center',
+    }).setOrigin(pos.ox, pos.oy).setAlpha(0);
     this.add.existing(t);
     this.captionText = t;
     this.tweens.add({ targets: t, alpha: 1, duration: fadeMs });
@@ -165,9 +170,6 @@ export class Director {
     for (let i = 0; i < frames; i++) {
       this.virtualNow += delta;
       this.game.step(this.virtualNow, delta);
-      // a scene launched mid-beat (Journal, Cooking) lands above the overlay; keep captions on top
-      const active = this.game.scene.getScenes(true);
-      if (active.length && active[active.length - 1].scene.key !== DIRECTOR.sceneKey && this.overlay()) this.game.scene.bringToTop(DIRECTOR.sceneKey);
       if (!this.muted && this.encoders.length) {
         const ts = Math.round((this.frameIndex * 1_000_000) / this.fps);
         const keyFrame = this.frameIndex % DIRECTOR.keyframeEvery === 0;
@@ -195,9 +197,9 @@ export class Director {
     this.muted = on;
   }
 
-  caption(text: string, opts: { holdMs?: number; fadeMs?: number } = {}): void {
+  caption(text: string, opts: { holdMs?: number; fadeMs?: number; at?: CaptionAt } = {}): void {
     this.ensureOverlay();
-    this.overlay()?.caption(text, opts.holdMs ?? 0, opts.fadeMs);
+    this.overlay()?.caption(text, opts.holdMs ?? 0, opts.fadeMs, opts.at);
   }
   titleCard(show: boolean): void {
     this.ensureOverlay();

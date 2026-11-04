@@ -24,7 +24,7 @@ import { FORAGE_SIZES } from '@/art/props/forage';
 
 export const COMPANION_FLOW = {
   /** px behind the hero when following */
-  followGap: 70,
+  followGap: 118, // past the tail: Chikki's tail covers about 90 px behind the body
   /** "near" for the Share action */
   nearPx: 160,
   /** re-peek after a tap-hide, ms */
@@ -315,6 +315,7 @@ export class CompanionFlow {
     if (!this.companion) {
       this.companion = new Companion(this.camp, x, y);
       this.companion.setData('baseScale', 1);
+      this.companion.setData('sortBias', 2); // small and near: never lost behind the hero's tail
       if (this.lastTint) this.companion.setTint(this.lastTint);
     }
     return this.companion;
