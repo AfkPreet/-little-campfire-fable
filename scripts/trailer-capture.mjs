@@ -192,7 +192,7 @@ const BEATS = [
   },
   {
     n: 3, start: 11, end: 17, caption: 'Home sweet home', world: 'fresh-camp',
-    prep: () => cinematic({ time: 'day', heroX: LAYOUT.tentSpot1 - 150, chrome: true, rings: true }),
+    prep: () => cinematic({ time: 'day', weather: 'clear', heroX: LAYOUT.tentSpot1 - 150, chrome: true, rings: true }),
     run: async (b) => {
       // the real pitch flow: tap the spot (walks there, the tent lies flat), tap the four pegs, it springs up
       const t = await act(`api.tap('tent-spot-1')`);
@@ -209,7 +209,7 @@ const BEATS = [
   },
   {
     n: 4, start: 17, end: 22, caption: 'Jamun, mushrooms, lemongrass', world: 'fresh-camp-pitched',
-    prep: () => cinematic({ heroX: LAYOUT.thicket1 + 150, facing: -1, chrome: true, rings: true }),
+    prep: () => cinematic({ weather: 'clear', heroX: LAYOUT.thicket1 + 150, facing: -1, chrome: true, rings: true }),
     run: async (b) => {
       const t = await act(`api.forage('berry_bush_1')`);
       await stepUntilDone(t, b.end - 0.3);
@@ -218,7 +218,7 @@ const BEATS = [
   },
   {
     n: 5, start: 22, end: 29, caption: 'Tap when it bites', world: 'fresh-camp-pitched',
-    prep: () => cinematic({ heroX: LAYOUT.jettyEnd - 34 - 130, chrome: true, rings: true }),
+    prep: () => cinematic({ weather: 'clear', heroX: LAYOUT.jettyEnd - 34 - 130, chrome: true, rings: true }),
     run: async (b) => {
       const w = await act(`api.walkTo(${LAYOUT.jettyEnd - 34})`);
       await stepUntilDone(w, b.start + 1.6);
@@ -234,7 +234,7 @@ const BEATS = [
   {
     n: 6, start: 29, end: 36, caption: 'Stir twice', world: 'fresh-camp-pitched',
     prep: async () => {
-      await cinematic({ heroX: LAYOUT.fire - 70, chrome: true, rings: true });
+      await cinematic({ weather: 'clear', heroX: LAYOUT.fire - 70, chrome: true, rings: true });
       if ((await api(`api.state().inventory.forage.herbs`)) < 1) await api(`api.addForage('herbs', 2)`);
     },
     run: async (b) => {
