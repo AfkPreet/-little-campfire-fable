@@ -52,6 +52,10 @@ Use `music_day.mp3` from `MUSIC_BRIEF.md` for 0:00-0:36, cross to `music_night.m
 
 ## Files
 
-- `marketing/trailer/clips/`: one WebM per beat from `npm run trailer:capture`
-- `marketing/trailer/render/little-monsoon-trailer-16x9.webm`: the assembled 90 s master (captions burned in)
-- Convert to MP4 locally: `ffmpeg -i little-monsoon-trailer-16x9.webm -c:v libx264 -pix_fmt yuv420p little-monsoon-trailer-16x9.mp4`
+- `npm run trailer:capture` renders the whole trailer in one pass (about 7 minutes headless): 2700 frames at 30 fps from the live game, two encodes.
+- `marketing/trailer/render/little-monsoon-trailer-16x9.webm`: the 90 s master, VP9 at 4 Mbps, 40.7 MB, captions burned in, silent. Not in git (sent from the session; re-render to recreate).
+- `marketing/trailer/render/little-monsoon-trailer-16x9-web.webm`: the same cut at 1.1 Mbps, 13.3 MB, in git.
+- Player page: https://claude.ai/artifact/7XUyoTwSkBaj9TbCXzQu1v (private until shared; `marketing/trailer/index.html`, the web copy uploaded as its asset).
+- `marketing/trailer/checks/beat-NN.png`: a still from each beat's midpoint, written during the render; `--verify --at=46,49.5` seeks any time in the finished web file.
+- Convert the master to MP4 locally, then lay the voice-over and music under it:
+  `ffmpeg -i little-monsoon-trailer-16x9.webm -c:v libx264 -pix_fmt yuv420p -crf 18 little-monsoon-trailer-16x9.mp4`
