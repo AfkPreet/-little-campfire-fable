@@ -66,8 +66,9 @@ Any of mp3, wav or ogg works; a missing file is skipped, so music alone is fine.
 ## Files
 
 - `npm run trailer:capture` renders the whole trailer in one pass (about 7 minutes headless): 2700 frames at 30 fps from the live game, two encodes.
-- `marketing/trailer/render/little-monsoon-trailer-16x9.webm`: the 90 s master, VP9 at 4 Mbps, 40.7 MB, captions burned in, silent. Not in git (sent from the session; re-render to recreate).
-- `marketing/trailer/render/little-monsoon-trailer-16x9-web.webm`: the same cut at 1.1 Mbps, 13.3 MB, in git.
+- `marketing/trailer/render/little-monsoon-trailer-16x9.webm`: the 90 s master, VP9 at 4 Mbps plus Opus 128 kbps music, 42 MB, captions burned in. Not in git (sent from the session; `npm run trailer:capture` then `npm run trailer:audio` recreate it).
+- `marketing/trailer/render/little-monsoon-trailer-16x9-web.webm`: the same cut at 1.1 Mbps, 14.7 MB, in git.
+- `marketing/trailer/audio/`: the three generated cues (ElevenLabs Music v2.5 via Higgsfield) and, under `vo-pending/`, voice lines generated so far (Seed Audio 1.0, preset voice Willow, speech rate -8); `sources.json` holds the Higgsfield job ids. Move lines up to `audio/vo-NN.mp3` once all sixteen exist and rerun `npm run trailer:audio`.
 - Player page: https://claude.ai/artifact/7XUyoTwSkBaj9TbCXzQu1v (private until shared; `marketing/trailer/index.html`, the web copy uploaded as its asset).
 - `marketing/trailer/checks/beat-NN.png`: a still from each beat's midpoint, written during the render; `--verify --at=46,49.5` seeks any time in the finished web file.
 - Convert the master to MP4 locally, then lay the voice-over and music under it:

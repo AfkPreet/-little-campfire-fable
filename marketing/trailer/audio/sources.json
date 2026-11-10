@@ -1,0 +1,9 @@
+{
+  "note": "Higgsfield job ids for each generated file (ElevenLabs Music v2.5 for cues, Seed Audio 1.0 preset voice Willow for lines). vo-pending/ holds lines waiting for the rest of the set.",
+  "music-day.mp3": "b8f38905-45d5-484a-8a7f-056c7ac97442",
+  "music-night.mp3": "72776cac-23bd-4642-a778-20ffce51cae4",
+  "music-finale.mp3": "cbe21f8b-45a5-4aa2-a428-84b10c71e26d",
+  "vo-pending/vo-04.mp3": "da3430d4-61a0-46e5-9101-c48f74319679",
+  "vo-pending/vo-10.mp3": "ee8724fc-dcc3-4a25-9354-24c3900c23a2",
+  "vo-pending/vo-12.mp3": "d4518271-0b68-4216-b16c-36c40b7f1dfd"
+}
